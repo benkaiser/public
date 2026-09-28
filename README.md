@@ -38,5 +38,4 @@ The Pages custom domain is `public.benkaiser.dev`. Configure this record with th
 | --- | --- | --- |
 | `CNAME` | `public` | `benkaiser.github.io` |
 
-Do not use a wildcard record. After DNS propagation, GitHub Pages can provision and enforce HTTPS. DNS changes can take up to 24 hours.
-
+Do not use a wildcard record. After DNS propagation and certificate provisioning, enable **Enforce HTTPS** in the repository's Pages settings. DNS changes and certificate issuance can take up to 24 hours.
