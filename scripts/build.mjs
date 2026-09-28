@@ -72,6 +72,5 @@ await writeFile(
   path.join(output, "index.html"),
   page("Public files", `<h1>Public files</h1>\n  <ul>\n${links}\n  </ul>`),
 );
-await writeFile(path.join(output, "CNAME"), "public.benkaiser.dev\n");
+await writeFile(path.join(output, "CNAME"), "cdn.benkaiser.dev\n");
 await writeFile(path.join(output, ".nojekyll"), "");
-

@@ -1,6 +1,6 @@
-# public.benkaiser.dev
+# cdn.benkaiser.dev
 
-This repository publishes files at **https://public.benkaiser.dev**.
+This repository publishes files at **https://cdn.benkaiser.dev**.
 
 ## Publish a file
 
@@ -12,9 +12,9 @@ The directory structure becomes the URL structure. For example:
 
 | Repository path | Public URL |
 | --- | --- |
-| `files/example.apk` | `https://public.benkaiser.dev/example.apk` |
-| `files/guides/setup.html` | `https://public.benkaiser.dev/guides/setup.html` |
-| `files/notes.md` | `https://public.benkaiser.dev/notes.md` and `https://public.benkaiser.dev/notes.html` |
+| `files/example.apk` | `https://cdn.benkaiser.dev/example.apk` |
+| `files/guides/setup.html` | `https://cdn.benkaiser.dev/guides/setup.html` |
+| `files/notes.md` | `https://cdn.benkaiser.dev/notes.md` and `https://cdn.benkaiser.dev/notes.html` |
 
 All file types are copied without modification. Markdown files are also rendered to styled HTML during CI while the original Markdown remains downloadable. A generated home page lists every published file.
 
@@ -32,10 +32,10 @@ Then open <http://localhost:8000>.
 
 ## Domain and DNS
 
-The Pages custom domain is `public.benkaiser.dev`. Configure this record with the DNS provider for `benkaiser.dev`:
+The Pages custom domain is `cdn.benkaiser.dev`. Configure this record with the DNS provider for `benkaiser.dev`:
 
 | Type | Name/host | Value |
 | --- | --- | --- |
-| `CNAME` | `public` | `benkaiser.github.io` |
+| `CNAME` | `cdn` | `benkaiser.github.io` |
 
 Do not use a wildcard record. After DNS propagation and certificate provisioning, enable **Enforce HTTPS** in the repository's Pages settings. DNS changes and certificate issuance can take up to 24 hours.
