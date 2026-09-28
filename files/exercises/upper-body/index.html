@@ -204,37 +204,47 @@
       min-height: 330px;
       margin-top: 28px;
       display: grid;
-      grid-template-columns: minmax(240px, .95fr) minmax(240px, 1fr);
+      grid-template-columns: minmax(280px, 1.3fr) minmax(240px, 1fr);
       align-items: center;
       gap: clamp(24px, 5vw, 66px);
     }
     .visual {
       position: relative;
-      min-height: 300px;
+      aspect-ratio: 4 / 3;
       overflow: hidden;
-      display: grid;
-      place-items: center;
       border: 1px solid rgba(23, 77, 60, .08);
       border-radius: 28px;
-      background:
-        linear-gradient(rgba(255, 255, 255, .35), rgba(255, 255, 255, 0)),
-        var(--sage);
+      background: linear-gradient(#f4f7f1, #e1e8dc 70%);
     }
-    .visual::after {
-      content: "";
+    .visual svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .viz-chip {
       position: absolute;
-      right: -35px;
-      bottom: -70px;
-      width: 190px;
-      height: 190px;
-      border: 42px solid rgba(255, 255, 255, .32);
-      border-radius: 50%;
+      top: 12px;
+      left: 12px;
+      padding: 7px 11px 8px;
+      min-width: 128px;
+      border-radius: 12px;
+      color: var(--ink);
+      font-size: .74rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, .88);
+      box-shadow: 0 4px 14px rgba(28, 41, 37, .08);
     }
-    .visual svg { z-index: 1; width: 88%; max-height: 290px; overflow: visible; }
-    .motion { animation: move 2.8s ease-in-out infinite; transform-box: fill-box; }
-    .pulse { animation: pulse 2.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
-    @keyframes move { 0%, 15%, 85%, 100% { transform: translate(var(--x1, 0), var(--y1, 0)) rotate(var(--r1, 0)); } 45%, 60% { transform: translate(var(--x2, 0), var(--y2, -8px)) rotate(var(--r2, 0)); } }
-    @keyframes pulse { 0%, 100% { opacity: .25; transform: scale(.94); } 50% { opacity: .65; transform: scale(1.05); } }
+    .viz-chip i { display: block; height: 3px; margin-top: 6px; overflow: hidden; border-radius: 3px; background: var(--sage); }
+    .viz-chip b { display: block; height: 100%; width: 0; background: var(--coral); }
+    .viz-legend {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 600;
+    }
+    .viz-legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; vertical-align: -1px; }
+    .viz-legend .lg-work::before { background: #ff5a3c; opacity: .75; }
+    .viz-legend .lg-knee::before { border: 1.5px dashed #0e9fb2; background: rgba(14, 159, 178, .14); width: 7px; height: 7px; }
 
     .details { min-width: 0; }
     .dose {
@@ -277,6 +287,7 @@
       border-radius: 12px;
       background: var(--sage);
     }
+    .option-toggle[hidden] { display: none; }
     .option-toggle button {
       padding: 7px 10px;
       border: 0;
@@ -391,8 +402,6 @@
       .safety-button { margin-top: 0; text-align: center; }
       .stage { padding: 26px 20px 22px; }
       .exercise-grid { min-height: 0; margin-top: 22px; grid-template-columns: 1fr; gap: 22px; }
-      .visual { min-height: 250px; }
-      .visual svg { max-height: 235px; }
       .controls { margin-top: 26px; grid-template-columns: 1fr 1fr; }
       .progress-track { grid-column: 1 / -1; grid-row: 1; }
       .nav { width: 100%; }
@@ -402,7 +411,6 @@
       .brand > span:last-child { display: none; }
       .duration { font-size: .72rem; }
       .stage-top { align-items: flex-start; }
-      .visual { min-height: 220px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -440,7 +448,13 @@
         </div>
 
         <div class="exercise-grid">
-          <div class="visual" id="visual" aria-label="Animated exercise demonstration"></div>
+          <div>
+            <div class="visual" role="img" id="visualWrap" aria-label="Animated exercise demonstration">
+              <div id="visual"></div>
+              <div class="viz-chip"><span id="vizLabel"></span><i><b id="vizBar"></b></i></div>
+            </div>
+            <div class="viz-legend"><span class="lg-work">Working muscles</span><span class="lg-knee">Left knee · keep neutral</span></div>
+          </div>
           <div class="details">
             <div class="option-toggle" id="optionToggle" hidden>
               <button data-option="triceps" class="active">Triceps</button>
@@ -484,34 +498,504 @@
   </dialog>
 
   <script>
-    const C = { ink: "#1c2925", green: "#174d3c", coral: "#ef765f", lime: "#d9f275", skin: "#d9a17f", white: "#f8f7f2" };
-    const svg = (body) => `<svg viewBox="0 0 360 270" role="img" aria-hidden="true">${body}</svg>`;
-    const person = (extra = "", pose = "") => `
-      <g stroke="${C.ink}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" ${pose}>
-        <circle cx="183" cy="70" r="19" fill="${C.skin}" stroke="none"/>
-        <path d="M181 94 L177 160"/>
-        <path d="M178 158 L146 217 M178 158 L211 217"/>
-        ${extra}
-      </g>`;
-    const floor = `<path d="M45 231H315" stroke="${C.green}" stroke-width="4" stroke-linecap="round" opacity=".25"/>`;
-    const machine = `<g fill="none" stroke="${C.green}" stroke-width="7" stroke-linecap="round"><path d="M86 216V71M86 150h61M147 150v67M84 216h77"/><path d="M78 66h18" stroke="${C.coral}"/></g>`;
+    (function (root) {
+      const DEG = Math.PI / 180;
+      const L = { torso: 52, neck: 7, head: 9.5, ua: 29, fa: 27, th: 43, sh: 43, ft: 12, sw: 16, hw: 9 };
+      const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+      const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+      const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+      const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+      const unit = (a) => mul(a, 1 / (Math.hypot(a[0], a[1], a[2]) || 1));
+      const lerp3 = (a, b, t) => add(a, mul(sub(b, a), t));
+      const sag = (a) => [Math.cos(a * DEG), Math.sin(a * DEG), 0];
+      // Spherical direction: h = heading from forward toward the body's own side, e = elevation.
+      const dir = ([h, e], side) => [Math.cos(e * DEG) * Math.cos(h * DEG), Math.sin(e * DEG), side * Math.cos(e * DEG) * Math.sin(h * DEG)];
+      const rotAxis = (v, k, ang) => {
+        if (!ang) return v;
+        const c = Math.cos(ang), s = Math.sin(ang);
+        return add(add(mul(v, c), mul(cross(k, v), s)), mul(k, dot(k, v) * (1 - c)));
+      };
+      const ease = (k) => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, k)));
 
-    const visuals = {
-      circles: () => svg(`${floor}<circle cx="180" cy="135" r="88" fill="none" stroke="${C.white}" stroke-width="34" opacity=".45"/><g class="motion" style="--r1:-12deg;--r2:12deg;transform-origin:180px 98px">${person(`<path d="M180 105 L121 117 M180 105 L239 117"/>`)}</g><path d="M85 92a105 105 0 0 1 190 0" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 10"/>`),
-      twists: () => svg(`${floor}<rect x="124" y="177" width="112" height="13" rx="6" fill="${C.green}" opacity=".35"/><g class="motion" style="--r1:-7deg;--r2:7deg;transform-origin:180px 155px">${person(`<path d="M180 108 L131 132 M180 108 L229 132"/>`)}</g><path d="M109 119c17-19 40-28 66-28M251 119c-17-19-40-28-66-28" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round"/>`),
-      chest: () => svg(`${machine}<rect x="135" y="103" width="14" height="75" rx="7" fill="${C.green}" opacity=".45"/><g>${person(`<g class="motion" style="--x1:-12px;--x2:25px"><path d="M180 105 L221 128 L263 128 M180 105 L221 151 L263 151"/><path d="M265 111v56" stroke="${C.coral}"/></g>`)}</g><circle class="pulse" cx="184" cy="111" r="30" fill="${C.coral}" stroke="none"/>`),
-      row: () => svg(`${floor}<rect x="114" y="183" width="91" height="12" rx="6" fill="${C.green}" opacity=".35"/><path d="M255 64v154M246 64h18" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><g>${person(`<g class="motion" style="--x1:32px;--x2:0px"><path d="M180 106 L220 130 L258 132 M180 106 L219 151 L258 153"/><path d="M258 117v51" stroke="${C.coral}"/></g>`)}</g><ellipse class="pulse" cx="170" cy="118" rx="34" ry="43" fill="${C.coral}" stroke="none"/>`),
-      pulldown: () => svg(`<path d="M75 47h210M180 47v22" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><rect x="133" y="183" width="94" height="12" rx="6" fill="${C.green}" opacity=".35"/>${person(`<g class="motion" style="--y1:-30px;--y2:4px"><path d="M180 105 L135 70 L100 61 M180 105 L225 70 L260 61"/><path d="M92 58h176" stroke="${C.coral}"/></g>`)}<ellipse class="pulse" cx="180" cy="121" rx="38" ry="48" fill="${C.coral}" stroke="none"/>`),
-      shoulder: () => svg(`${machine}<rect x="135" y="105" width="14" height="74" rx="7" fill="${C.green}" opacity=".45"/>${person(`<g class="motion" style="--y1:22px;--y2:-18px"><path d="M180 106 L146 87 L130 55 M180 106 L214 87 L230 55"/><path d="M118 52h124" stroke="${C.coral}"/></g>`)}<circle class="pulse" cx="180" cy="105" r="41" fill="${C.coral}" stroke="none"/>`),
-      triceps: () => svg(`<path d="M275 40v191M268 40h14" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><path d="M275 51L225 85" stroke="${C.coral}" stroke-width="4"/>${floor}${person(`<g class="motion" style="--y1:-12px;--y2:18px"><path d="M180 105 L212 119 L225 91 M180 105 L207 145 L229 91"/></g>`)}<ellipse class="pulse" cx="204" cy="127" rx="20" ry="42" fill="${C.coral}" stroke="none"/>`),
-      biceps: () => svg(`${machine}<rect x="128" y="142" width="105" height="17" rx="8" fill="${C.green}"/>${person(`<g class="motion" style="--r1:13deg;--r2:-20deg;transform-origin:207px 140px"><path d="M180 106 L207 137 L247 157 M180 106 L194 143 L232 166"/></g>`)}<circle class="pulse" cx="200" cy="132" r="25" fill="${C.coral}" stroke="none"/>`),
-      deadbug: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L133 93 M180 105 L227 93"/><path d="M178 158 L139 175 L139 211 M178 158 L217 175 L217 211"/>`)}</g><g class="motion" style="--x1:-20px;--x2:12px"><path d="M128 90L72 90" stroke="${C.coral}" stroke-width="8" stroke-linecap="round"/></g>`),
-      hollow: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L144 81 M180 105 L216 81"/><path d="M178 158 L144 178 L144 215 M178 158 L212 178 L212 215"/>`)}</g><path class="pulse" d="M116 175Q180 145 244 175" fill="none" stroke="${C.coral}" stroke-width="13" stroke-linecap="round"/>`),
-      seatedtwist: () => svg(`${floor}<g transform="rotate(-9 180 140)">${person(`<g class="motion" style="--r1:-13deg;--r2:13deg;transform-origin:180px 112px"><path d="M180 105 L139 124 M180 105 L221 124"/></g><path d="M178 158 L137 195 L102 220 M178 158 L215 195 L251 220"/>`)}</g><path d="M119 101a74 74 0 0 1 122 0" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round"/>`),
-      plank: () => svg(`${floor}<g transform="rotate(70 180 145) translate(-18 8)">${person(`<path d="M180 105 L141 134 L106 134 M180 105 L219 134 L254 134"/>`)}</g><path class="pulse" d="M112 145L226 104" stroke="${C.coral}" stroke-width="14" stroke-linecap="round"/>`),
-      vacuum: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L150 85 M180 105 L210 85"/><path d="M178 158 L143 180 L143 218 M178 158 L213 180 L213 218"/>`)}</g><circle class="pulse" cx="180" cy="160" r="23" fill="${C.coral}"/><path d="M149 160h20M211 160h-20" stroke="${C.green}" stroke-width="5" stroke-linecap="round"/>`),
-      recovery: () => svg(`${floor}<circle cx="180" cy="128" r="76" fill="${C.white}" opacity=".45"/><path d="M151 131l20 20 43-52" fill="none" stroke="${C.green}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><g class="pulse"><circle cx="180" cy="128" r="91" fill="none" stroke="${C.lime}" stroke-width="10"/></g>`),
-    };
+      const COL = {
+        skin: "#e2ae8e", hair: "#3a2a22", shirt: "#2f7d64", pants: "#2c3640", shoe: "#f3f0e8",
+        frame: "#8a9893", pad: "#3b4844", plate: "#4a5752", floor: "#e1e8dc", mat: "#9cc8b8",
+        focus: "#ff5a3c", knee: "#0e9fb2", cable: "#1f2a26", ice: "#8fd3f4", grip: "#1c2522",
+      };
+      function shade(hex, f) {
+        const n = parseInt(hex.slice(1), 16);
+        let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+        if (f < 1) { r *= f; g *= f; b *= f; } else { const k = f - 1; r += (255 - r) * k; g += (255 - g) * k; b += (255 - b) * k; }
+        return "#" + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
+      }
+
+      function mix(A, B, t) {
+        if (typeof A === "number") return A + ((B ?? A) - A) * t;
+        if (Array.isArray(A)) return A.map((v, i) => mix(v, B?.[i], t));
+        const o = {};
+        for (const k in A) o[k] = mix(A[k], B?.[k], t);
+        return o;
+      }
+      function merge(a, b) {
+        if (b === undefined) return a;
+        if (typeof b !== "object" || Array.isArray(b)) return b;
+        const o = { ...a };
+        for (const k in b) o[k] = merge(a?.[k], b[k]);
+        return o;
+      }
+      const both = (A) => ({ L: A, R: A });
+
+      function skeleton(p) {
+        const hip = [p.x, p.y, 0];
+        const tdir = sag(p.torso);
+        const tw = (p.twist || 0) * DEG;
+        const rot = (v) => rotAxis(v, tdir, tw);
+        const sc = add(hip, mul(tdir, L.torso));
+        const f0 = sag(p.torso - 90);
+        const J = { hip, sc, tdir, f0, fS: rot(f0), fM: rotAxis(f0, tdir, tw / 2) };
+        [["L", -1], ["R", 1]].forEach(([s, side]) => {
+          const A = p.arms[s], G = p.legs[s];
+          const sh = add(sc, rot([0, 0, side * L.sw]));
+          const el = add(sh, mul(rot(dir(A.u, side)), L.ua));
+          const ha = add(el, mul(rot(dir(A.f, side)), L.fa));
+          const hp = add(hip, [0, 0, side * L.hw]);
+          const kn = add(hp, mul(dir(G.t, side), L.th));
+          const an = add(kn, mul(dir(G.s, side), L.sh));
+          const to = add(an, mul(dir(G.f, side), L.ft));
+          Object.assign(J, { ["sh" + s]: sh, ["el" + s]: el, ["ha" + s]: ha, ["hp" + s]: hp, ["kn" + s]: kn, ["an" + s]: an, ["to" + s]: to });
+        });
+        const hd = p.head ?? p.torso;
+        const axis = rot(sag(hd));
+        J.neck = add(sc, mul(axis, L.neck));
+        J.headC = add(J.neck, mul(axis, L.head * 0.8));
+        J.hAxis = axis;
+        J.face = rot(sag(hd - 90));
+        return J;
+      }
+
+      function camera(yaw, pitch) {
+        const cy = Math.cos(yaw * DEG), sy = Math.sin(yaw * DEG), cp = Math.cos(pitch * DEG), sp = Math.sin(pitch * DEG);
+        return {
+          view: [sy * cp, sp, -cy * cp],
+          p: (P) => {
+            const near = P[0] * sy - P[2] * cy;
+            return [-P[0] * cy - P[2] * sy, -P[1] * cp + near * sp, near * cp + P[1] * sp];
+          },
+        };
+      }
+
+      const f1 = (n) => Math.round(n * 10) / 10;
+      const ptsStr = (pts) => pts.map((p) => f1(p[0]) + "," + f1(p[1])).join(" ");
+      function hull2(P) {
+        const pts = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+        const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+        const lo = [], up = [];
+        for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+        for (const p of pts.reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+        return lo.slice(0, -1).concat(up.slice(0, -1));
+      }
+      const LIGHT = unit([0.45, 1, -0.55]);
+
+      class Scene {
+        constructor(cam) { this.cam = cam; this.items = []; }
+        push(layer, z, pts, d, nb) { this.items.push({ layer, z, pts, d, nb }); }
+        lineD(a, b, w, col, extra = "") {
+          const A = this.cam.p(a), B = this.cam.p(b);
+          return { A, B, d: `<line x1="${f1(A[0])}" y1="${f1(A[1])}" x2="${f1(B[0])}" y2="${f1(B[1])}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"${extra}/>` };
+        }
+        line(a, b, w, col, layer = 1, z, extra = "") {
+          const { A, B, d } = this.lineD(a, b, w, col, extra);
+          this.push(layer, z ?? (A[2] + B[2]) / 2, [A, B], d);
+        }
+        circleD(p, r, fill, extra = "") {
+          const P = this.cam.p(p);
+          return { P, d: `<circle cx="${f1(P[0])}" cy="${f1(P[1])}" r="${r}" fill="${fill}"${extra}/>` };
+        }
+        circle(p, r, fill, layer = 1, z, extra = "") {
+          const { P, d } = this.circleD(p, r, fill, extra);
+          this.push(layer, z ?? P[2], [[P[0] - r, P[1] - r], [P[0] + r, P[1] + r]], d);
+        }
+        hullD(pts3, fill, extra = "", sw = 4) {
+          const P = pts3.map(this.cam.p);
+          const H = hull2(P);
+          return { P, z: P.reduce((s, p) => s + p[2], 0) / P.length, d: `<polygon points="${ptsStr(H)}" fill="${fill}" stroke="${fill}" stroke-width="${sw}" stroke-linejoin="round"${extra}/>` };
+        }
+        obox(c, U, V, W, col, layer = 0, z, nb) {
+          const view = this.cam.view;
+          let d = "";
+          const all = [];
+          [[U, V, W], [V, W, U], [W, U, V]].forEach(([A, B, C]) => {
+            [1, -1].forEach((s) => {
+              const n = unit(mul(A, s));
+              if (dot(n, view) <= 0.001) return;
+              const fc = add(c, mul(A, s));
+              const q = [add(add(fc, B), C), add(sub(fc, B), C), sub(sub(fc, B), C), sub(add(fc, B), C)].map(this.cam.p);
+              all.push(...q);
+              const k = 0.7 + 0.38 * Math.max(0, dot(n, LIGHT));
+              const c2 = shade(col, k);
+              d += `<polygon points="${ptsStr(q)}" fill="${c2}" stroke="${c2}" stroke-width=".7" stroke-linejoin="round"/>`;
+            });
+          });
+          this.push(layer, z ?? this.cam.p(c)[2], all, d, nb);
+        }
+        abox(x0, x1, y0, y1, z0, z1, col, layer = 0, z, nb) {
+          this.obox([(x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2], [(x1 - x0) / 2, 0, 0], [0, (y1 - y0) / 2, 0], [0, 0, (z1 - z0) / 2], col, layer, z, nb);
+        }
+        floorEllipse(cx, cz, rx, rz, fill, op) {
+          const pts = [];
+          for (let i = 0; i < 28; i++) { const a = (i / 28) * Math.PI * 2; pts.push(this.cam.p([cx + Math.cos(a) * rx, 0.3, cz + Math.sin(a) * rz])); }
+          this.push(-1, -1e6, pts, `<polygon points="${ptsStr(pts)}" fill="${fill}" opacity="${op}"/>`, true);
+        }
+      }
+
+      // ---------- Body ----------
+      function drawBody(S, J, P, tp, ex) {
+        const pr = S.cam.p;
+        const glow = f1(0.14 + 0.66 * Math.max(0, Math.min(1, tp.e ?? tp.m)) * 100) / 100;
+        const focus = ex.focus || [];
+        const fx = ` opacity="${glow}"`;
+        const { fS, fM, f0 } = J;
+        const belly = P.belly ?? 6.5;
+        const mid = (s) => lerp3(J["sh" + s], J["hp" + s], 0.5);
+        const waist = (s) => lerp3(J["sh" + s], J["hp" + s], 0.84);
+        const tp3 = [];
+        ["L", "R"].forEach((s) => {
+          const sh = J["sh" + s];
+          tp3.push(add(add(sh, mul(fS, 5.5)), mul(J.tdir, 1)), add(add(sh, mul(fS, -5.5)), mul(J.tdir, 1)),
+            add(mid(s), mul(fM, belly)), add(mid(s), mul(fM, -6.5)), add(waist(s), mul(f0, 6.2)), add(waist(s), mul(f0, -6.2)));
+        });
+        const torso = S.hullD(tp3, COL.shirt, "", 6);
+        const zT = torso.z;
+        const pel = [];
+        ["L", "R"].forEach((s) => {
+          pel.push(add(waist(s), mul(f0, 6.2)), add(waist(s), mul(f0, -6.2)), add(J["hp" + s], mul(f0, 7)), add(J["hp" + s], mul(f0, -7)),
+            lerp3(J["hp" + s], J["kn" + s], 0.28));
+        });
+        const pelvis = S.hullD(pel, COL.pants, "", 6);
+        S.push(1, zT - 0.02, pelvis.P, pelvis.d);
+
+        let tOver = "";
+        const ov = (pts) => S.hullD(pts, COL.focus, fx, 3).d;
+        const mL = mid("L"), mR = mid("R"), wL = waist("L"), wR = waist("R");
+        if (focus.includes("chest")) tOver += ov([add(J.shL, mul(fS, 6)), add(J.shR, mul(fS, 6)), add(lerp3(J.shL, mL, 0.8), mul(fM, belly + 0.5)), add(lerp3(J.shR, mR, 0.8), mul(fM, belly + 0.5)), add(J.shL, mul(fS, 2)), add(J.shR, mul(fS, 2))]);
+        if (focus.includes("back")) tOver += ov([add(lerp3(J.shL, mL, 0.1), mul(fS, -6)), add(lerp3(J.shR, mR, 0.1), mul(fS, -6)), add(lerp3(J.shL, wL, 0.75), mul(fM, -6.4)), add(lerp3(J.shR, wR, 0.75), mul(fM, -6.4)), add(lerp3(J.shL, mL, 0.5), mul(fM, -2)), add(lerp3(J.shR, mR, 0.5), mul(fM, -2))]);
+        if (focus.includes("core")) tOver += ov([add(lerp3(J.shL, mL, 0.8), mul(fM, belly)), add(lerp3(J.shR, mR, 0.8), mul(fM, belly)), add(wL, mul(f0, 6.4)), add(wR, mul(f0, 6.4)), add(mL, mul(fM, 2)), add(mR, mul(fM, 2)), add(wL, mul(f0, 2)), add(wR, mul(f0, 2))]);
+        S.push(1, zT, torso.P, torso.d + tOver);
+
+        // Head & neck
+        const nk = S.lineD(J.sc, J.neck, 8, COL.skin);
+        const hair = S.circleD(add(add(J.headC, mul(J.face, -1.8)), mul(J.hAxis, 1)), 10, COL.hair);
+        const face = S.circleD(add(J.headC, mul(J.face, 0.6)), 9.1, COL.skin);
+        const eye = S.circleD(add(add(J.headC, mul(J.face, 7.6)), mul(J.hAxis, 1.6)), 1.1, "#2a1d17");
+        const hz = Math.max(face.P[2], zT + 0.05);
+        S.push(1, hz, [[face.P[0] - 11, face.P[1] - 11], [face.P[0] + 11, face.P[1] + 11]], nk.d + hair.d + face.d + eye.d);
+
+        const dz = (a, b) => pr(a)[2] * 0.75 + pr(b)[2] * 0.25;
+        ["L", "R"].forEach((s) => {
+          const k = s === "L" ? 1 : 0.8;
+          const sk = shade(COL.skin, k), pa = shade(COL.pants, s === "L" ? 1.12 : 0.9), sh = J["sh" + s], el = J["el" + s], ha = J["ha" + s];
+          const hp = J["hp" + s], kn = J["kn" + s], an = J["an" + s], to = J["to" + s];
+          const th = S.lineD(hp, kn, 13, pa), shin = S.lineD(kn, an, 10.5, pa);
+          S.push(1, dz(hp, kn), [th.A, th.B], th.d);
+          S.push(1, dz(kn, an), [shin.A, shin.B], shin.d);
+          const ft = S.lineD(an, to, 7, shade(COL.shoe, k));
+          const sole = S.lineD(add(an, [0, -1.5, 0]), add(to, [0, -1.5, 0]), 3, shade("#b9b2a2", k));
+          S.push(1, dz(an, to) + 0.01, [ft.A, ft.B], sole.d + ft.d);
+
+          let ua = S.lineD(sh, el, 9.5, sk).d + S.lineD(sh, lerp3(sh, el, 0.38), 11, shade(COL.shirt, k)).d;
+          if (focus.includes("shoulders")) ua += S.circleD(sh, 6.5, COL.focus, fx).d;
+          if (focus.includes("triceps") || focus.includes("biceps") || focus.includes("arms")) ua += S.lineD(lerp3(sh, el, 0.42), lerp3(sh, el, 0.9), 6.5, COL.focus, ` stroke-opacity="${glow}"`).d;
+          const uaz = dz(sh, el);
+          S.push(1, uaz, [pr(sh), pr(el)], ua);
+          const fa = S.lineD(el, ha, 8, sk), hand = S.circleD(ha, 4.4, sk);
+          S.push(1, Math.max(dz(el, ha), uaz + 0.01), [fa.A, fa.B, [hand.P[0] - 5, hand.P[1] - 5], [hand.P[0] + 5, hand.P[1] + 5]], fa.d + hand.d);
+        });
+
+        const kn = S.circleD(J.knL, 9.5, COL.knee, ` fill-opacity=".14" stroke="${COL.knee}" stroke-width="1.6" stroke-dasharray="3 2.2"`);
+        S.push(3, 0, [], kn.d);
+      }
+
+      // ---------- Equipment helpers ----------
+      function bench(S, x, top) {
+        S.abox(x - 19, x + 24, top - 6, top, -17, 17, COL.pad, 0);
+        S.abox(x - 3, x + 5, 3, top - 6, -4, 4, COL.frame, 0);
+        S.abox(x - 22, x + 26, 0, 3, -15, 15, COL.frame, 0);
+      }
+      function backrest(S, J) {
+        const c = add(add(J.hip, mul(J.tdir, 31)), mul(J.f0, -(6.5 + 3 + 3.5)));
+        S.obox(c, mul(J.tdir, 24), mul(J.f0, 3.5), [0, 0, 15], COL.pad, 0);
+        S.line(add(c, mul(J.f0, -3.5)), [J.hip[0] - 4, 20, 0], 5, COL.frame, -0.5);
+      }
+      function stack(S, x, z, lift, n = 10) {
+        const top = 3 + n * 5.2 + 26;
+        S.abox(x - 15, x + 15, 0, 3, z - 9, z + 9, COL.frame, 0);
+        S.abox(x - 14, x - 11.5, 3, top, z - 1.2, z + 1.2, COL.frame, 0);
+        S.abox(x + 11.5, x + 14, 3, top, z - 1.2, z + 1.2, COL.frame, 0);
+        S.abox(x - 16, x + 16, top, top + 4, z - 8, z + 8, COL.frame, 0);
+        for (let i = 0; i < n; i++) {
+          const y = 3 + i * 5.2 + (i >= n - 4 ? lift * 15 : 0);
+          S.abox(x - 10, x + 10, y, y + 4.6, z - 7, z + 7, i >= n - 4 ? shade(COL.plate, 1.1) : COL.plate, 0);
+        }
+        const yp = 3 + (n - 4) * 5.2 + lift * 15;
+        S.abox(x - 2, x + 2, yp + 1.2, yp + 3.4, z - 9, z - 7, COL.focus, 0);
+        return { topPlate: [x, 3 + n * 5.2 + lift * 15, z], top: [x, top + 4, z] };
+      }
+      const pulley = (S, p, layer = 1) => S.circle(p, 3, COL.grip, layer, undefined, ` stroke="${COL.frame}" stroke-width="1.4"`);
+      const cable = (S, pts, layer = 1) => { for (let i = 1; i < pts.length; i++) S.line(pts[i - 1], pts[i], 1.3, COL.cable, layer); };
+      const grip = (S, p, axis, half, layer = 1) => S.line(sub(p, mul(axis, half)), add(p, mul(axis, half)), 4.5, COL.grip, layer);
+      const mat = (S, x0, x1, hw = 30) => S.abox(x0, x1, 0, 1.6, -hw, hw, COL.mat, -1, -1e5, true);
+
+      // ---------- Tempo ----------
+      function cycle(t, segs) {
+        const total = segs.reduce((s, x) => s + x.d, 0);
+        let u = ((t % total) + total) % total;
+        for (const s of segs) {
+          if (u < s.d) { const k = u / s.d; return { m: s.from + (s.to - s.from) * (s.lin ? k : ease(k)), label: s.label, k, e: s.e }; }
+          u -= s.d;
+        }
+        return { m: segs[0].from, label: segs[0].label, k: 0 };
+      }
+      const rep = (a, b, hold = "Squeeze") => [
+        { d: 2, from: 0, to: 1, label: a + " · 2s" }, { d: 0.6, from: 1, to: 1, label: hold },
+        { d: 2, from: 1, to: 0, label: b + " · 2s" }, { d: 0.6, from: 0, to: 0, label: "Reset" },
+      ];
+
+      // ---------- Poses ----------
+      const seatedLegs = both({ t: [3, -3], s: [3, -95], f: [3, 0] });
+      const standLegs = both({ t: [0, -90], s: [0, -90], f: [0, 0] });
+      const softLegs = both({ t: [0, -83], s: [0, -97], f: [0, 0] });
+      const tabletop = both({ t: [4, 90], s: [4, 0], f: [4, 65] });
+      const seated = (arms, torso = 90, extra = {}) => ({ x: 0, y: 50, torso, arms, legs: seatedLegs, ...extra });
+
+      const EX = {
+        circles: {
+          cam: [58, 8], shadow: [0, 0, 26, 20], focus: ["shoulders"],
+          tempo: (t) => {
+            const T = 12, u = (t % T) / T, fwd = u < 0.5, k = fwd ? u / 0.5 : (u - 0.5) / 0.5;
+            return { m: (fwd ? -1 : 1) * 1080 * ease(k), e: 0.55, label: fwd ? "Forward circles" : "Backward circles", k };
+          },
+          pose: (tp) => {
+            const a = tp.m * DEG, A = { u: [90 - 20 * Math.cos(a), 4 + 20 * Math.sin(a)], f: [90 - 20 * Math.cos(a), 4 + 20 * Math.sin(a)] };
+            return { x: 0, y: 90, torso: 90, arms: both(A), legs: standLegs };
+          },
+        },
+        twists: {
+          cam: [46, 14], shadow: [10, 0, 34, 24], focus: ["core"],
+          tempo: (t) => cycle(t, [
+            { d: 2, from: 0, to: 1, label: "Turn left", e: 0.5 }, { d: 0.5, from: 1, to: 1, label: "Pause", e: 0.5 },
+            { d: 2, from: 1, to: -1, label: "Turn right", e: 0.5 }, { d: 0.5, from: -1, to: -1, label: "Pause", e: 0.5 },
+            { d: 1, from: -1, to: 0, label: "Centre", e: 0.5 },
+          ]),
+          pose: (tp) => seated(both({ u: [-14, -6], f: [-14, -6] }), 90, { twist: 38 * tp.m }),
+          scene: (S) => bench(S, 0, 45),
+        },
+        chest: {
+          cam: [30, 12], shadow: [0, 0, 40, 26], focus: ["chest", "triceps", "shoulders"],
+          tempo: (t) => cycle(t, rep("Press", "Return")),
+          pose: (tp) => mix(seated(both({ u: [125, -12], f: [-8, 0] }), 100), seated(both({ u: [15, -4], f: [-3, -4] }), 100), tp.m),
+          scene: (S, J, tp) => {
+            bench(S, 0, 45); backrest(S, J);
+            const st = stack(S, -52, 40, tp.m);
+            S.abox(-26, -20, 0, 150, -3, 3, COL.frame, 0);
+            S.abox(-26, 26, 144, 150, -3, 3, COL.frame, 0);
+            S.abox(18, 26, 144, 150, -34, 34, COL.frame, 0);
+            cable(S, [st.topPlate, [-52, st.top[1] + 4, 40], [-23, 146, 0]], 0);
+            ["L", "R"].forEach((s) => {
+              const h = J["ha" + s], zp = h[2] * 1.1;
+              S.line([22, 147, Math.sign(zp) * 32], [h[0], h[1] + 7, zp], 5, COL.frame, 1, S.cam.p(h)[2] + (s === "L" ? 0.5 : -0.5));
+              grip(S, [h[0], h[1], zp], [0, 1, 0], 7, 1);
+            });
+          },
+        },
+        row: {
+          cam: [34, 12], shadow: [10, 0, 44, 26], focus: ["back", "biceps"],
+          tempo: (t) => cycle(t, rep("Pull", "Return")),
+          pose: (tp) => mix(seated(both({ u: [-15, -4], f: [-15, -4] }), 88), seated(both({ u: [-15, -155], f: [0, -2] }), 88), tp.m),
+          scene: (S, J, tp) => {
+            bench(S, 0, 45);
+            const cx = J.sc[0] + 14;
+            S.abox(cx - 3, cx + 3, 72, 100, -11, 11, COL.pad, 1, S.cam.p([cx, 86, 0])[2]);
+            S.abox(cx + 3, 92, 80, 84, -2.5, 2.5, COL.frame, 0);
+            S.abox(88, 96, 0, 150, -4, 4, COL.frame, 0);
+            const st = stack(S, 110, 30, tp.m);
+            const hm = lerp3(J.haL, J.haR, 0.5), hc = add(hm, [6, 0, 0]);
+            cable(S, [add(hc, [0, 0, 0]), [88, 94, 0], [88, 140, 0], [110, st.top[1], 30], st.topPlate]);
+            pulley(S, [88, 94, 0]);
+            S.line(J.haL, hc, 3, COL.grip); S.line(J.haR, hc, 3, COL.grip);
+          },
+        },
+        pulldown: {
+          cam: [40, 10], shadow: [0, 0, 40, 26], focus: ["back", "biceps"],
+          tempo: (t) => cycle(t, rep("Pull down", "Return")),
+          pose: (tp) => mix(seated(both({ u: [80, 55], f: [80, 68] }), 97), seated(both({ u: [72, -58], f: [30, 76] }), 97), tp.m),
+          scene: (S, J, tp) => {
+            bench(S, 0, 45);
+            S.abox(30, 40, 58, 64, -18, 18, COL.pad, 2);
+            S.abox(33, 37, 0, 58, -3, 3, COL.frame, -0.5);
+            const st = stack(S, -46, 0, tp.m);
+            S.abox(-41, -35, 0, 215, -3, 3, COL.frame, 0);
+            S.abox(-41, 10, 209, 215, -3, 3, COL.frame, 0);
+            const hm = lerp3(J.haL, J.haR, 0.5);
+            const bar = unit(sub(J.haR, J.haL));
+            S.line(sub(J.haL, mul(bar, 10)), add(J.haR, mul(bar, 10)), 4, COL.grip, 1, S.cam.p(hm)[2] + 30);
+            cable(S, [add(hm, [0, 2, 0]), [6, 207, 0], [-46, 207, 0], st.topPlate], 0);
+            pulley(S, [6, 207, 0], 0);
+          },
+        },
+        shoulder: {
+          cam: [36, 10], shadow: [0, 0, 38, 26], focus: ["shoulders", "triceps"],
+          tempo: (t) => cycle(t, rep("Press up", "Lower", "Lockout")),
+          pose: (tp) => mix(seated(both({ u: [85, -12], f: [80, 85] }), 95), seated(both({ u: [75, 62], f: [40, 80] }), 95), tp.m),
+          scene: (S, J, tp) => {
+            bench(S, 0, 45); backrest(S, J);
+            stack(S, -58, 36, tp.m);
+            const pv = [J.sc[0] - 30, J.sc[1] + 40];
+            S.abox(pv[0] - 4, pv[0] + 2, 0, pv[1] + 2, -3, 3, COL.frame, 0);
+            S.abox(pv[0] - 3, pv[0] + 1, pv[1] - 2, pv[1] + 2, -34, 34, COL.frame, 0);
+            ["L", "R"].forEach((s) => {
+              const h = J["ha" + s], zp = Math.sign(h[2]) * (Math.abs(h[2]) + 4);
+              S.line([pv[0], pv[1], Math.sign(zp) * 34], [h[0], h[1], zp], 5, COL.frame, 1, S.cam.p(h)[2] + (s === "L" ? 0.5 : -0.5));
+              grip(S, h, [0, 0, 1], 6, 1);
+            });
+          },
+        },
+        triceps: {
+          cam: [34, 10], shadow: [6, 0, 30, 22], focus: ["triceps"],
+          tempo: (t) => cycle(t, rep("Push down", "Return")),
+          pose: (tp) => mix({ x: 0, y: 89.5, torso: 84, legs: softLegs, arms: both({ u: [0, -96], f: [-14, 38] }) }, { x: 0, y: 89.5, torso: 84, legs: softLegs, arms: both({ u: [0, -96], f: [-8, -82] }) }, tp.m),
+          scene: (S, J, tp) => {
+            const st = stack(S, 66, 0, tp.m, 12);
+            S.abox(52, 56, 0, 196, -4, 4, COL.frame, 0);
+            S.abox(38, 56, 192, 196, -3, 3, COL.frame, 0);
+            const hm = lerp3(J.haL, J.haR, 0.5), knot = add(hm, [2, 9, 0]);
+            cable(S, [knot, [40, 190, 0], [66, 194, 0], st.topPlate]);
+            pulley(S, [40, 190, 0]);
+            S.line(knot, J.haL, 2.5, COL.grip); S.line(knot, J.haR, 2.5, COL.grip);
+          },
+        },
+        biceps: {
+          cam: [34, 12], shadow: [10, 0, 40, 26], focus: ["biceps"],
+          tempo: (t) => cycle(t, rep("Curl", "Lower")),
+          pose: (tp) => mix(seated(both({ u: [0, -32], f: [0, -48] }), 84), seated(both({ u: [0, -32], f: [0, 92] }), 84), tp.m),
+          scene: (S, J, tp) => {
+            bench(S, 0, 45);
+            const d = sub(J.elL, J.shL), dn = unit(d), n = [dn[1], -dn[0], 0];
+            const mid = add(lerp3(J.shL, J.elL, 0.55), mul(n, 8.5));
+            mid[2] = 0;
+            S.obox(mid, mul(dn, 17), mul(n, 3.5), [0, 0, 24], COL.pad, 0);
+            S.abox(mid[0] - 3, mid[0] + 3, 0, mid[1] - 4, -3, 3, COL.frame, -0.5);
+            stack(S, 78, 32, tp.m);
+            const pv = [J.elL[0], J.elL[1]];
+            const h = J.haL, bz = 26;
+            S.line([pv[0], pv[1], -bz], [h[0], h[1], -bz], 4, COL.frame, 1, S.cam.p(h)[2] + 20);
+            S.line([pv[0], pv[1], bz], [h[0], h[1], bz], 4, COL.frame, 0);
+            S.line([h[0], h[1], -bz], [h[0], h[1], bz], 4.5, COL.grip, 1, S.cam.p(h)[2] + 10);
+          },
+        },
+        deadbug: {
+          cam: [16, 9], shadow: [-15, 0, 70, 30], focus: ["core"],
+          tempo: (t) => cycle(t, [
+            { d: 1.8, from: 0, to: 1, label: "Left arm reach", e: 1 }, { d: 0.5, from: 1, to: 1, label: "Back flat", e: 1 },
+            { d: 1.8, from: 1, to: 0, label: "Return", e: 0.4 }, { d: 1.8, from: 0, to: -1, label: "Right arm reach", e: 1 },
+            { d: 0.5, from: -1, to: -1, label: "Back flat", e: 1 }, { d: 1.8, from: -1, to: 0, label: "Return", e: 0.4 },
+          ]),
+          pose: (tp) => {
+            const l = Math.max(0, tp.m), r = Math.max(0, -tp.m);
+            const arm = (k) => ({ u: [6, 90 + 82 * k], f: [6, 90 + 82 * k] });
+            return { x: 0, y: 9, torso: 180, head: 180, arms: { L: arm(l), R: arm(r) }, legs: tabletop };
+          },
+          scene: (S) => mat(S, -110, 75),
+        },
+        hollow: {
+          cam: [16, 9], shadow: [-15, 0, 70, 30], focus: ["core"],
+          tempo: (t) => { const k = (t % 4) / 4; return { m: 0.5 - 0.5 * Math.cos(k * 2 * Math.PI), e: 0.85, label: k < 0.5 ? "Hold · breathe in" : "Hold · breathe out", k }; },
+          pose: (tp) => ({ x: 0, y: 9, torso: 172 - 1.2 * tp.m, head: 158, belly: 5.5, arms: both({ u: [5, 12], f: [5, 12] }), legs: tabletop }),
+          scene: (S) => mat(S, -110, 75),
+        },
+        seatedtwist: {
+          cam: [44, 16], shadow: [5, 0, 50, 28], focus: ["core"],
+          tempo: (t) => cycle(t, [
+            { d: 1.8, from: 0, to: 1, label: "Rotate left", e: 0.9 }, { d: 0.4, from: 1, to: 1, label: "Pause", e: 0.9 },
+            { d: 3.6, from: 1, to: -1, label: "Rotate right", e: 0.9 }, { d: 0.4, from: -1, to: -1, label: "Pause", e: 0.9 },
+            { d: 1.8, from: -1, to: 0, label: "Centre", e: 0.9 },
+          ]),
+          pose: (tp) => ({ x: 0, y: 12, torso: 118, twist: 40 * tp.m, arms: both({ u: [10, -50], f: [-60, 10] }), legs: both({ t: [3, 42], s: [3, -62], f: [3, 0] }) }),
+          scene: (S) => mat(S, -60, 90),
+        },
+        plank: {
+          cam: [22, 16], shadow: [0, 0, 70, 28], focus: ["core"],
+          tempo: (t) => { const k = (t % 4) / 4; return { m: 0.5 - 0.5 * Math.cos(k * 2 * Math.PI), e: 0.85, label: "Hold · brace & breathe", k }; },
+          pose: (tp) => ({ x: 0, y: 19.5 + 0.6 * tp.m, torso: 15 - 0.8 * tp.m, arms: both({ u: [0, -90 + 0.8 * tp.m], f: [-6, 0] }), legs: both({ t: [0, 199.7 - 0.8 * tp.m], s: [0, 179], f: [0, 180] }) }),
+          scene: (S) => mat(S, -100, 100),
+        },
+        vacuum: {
+          cam: [16, 9], shadow: [-10, 0, 70, 30], focus: ["core"],
+          tempo: (t) => cycle(t, [
+            { d: 1.6, from: 0, to: 1, label: "Exhale · draw in", e: 1 }, { d: 3, from: 1, to: 1, label: "Hold 10s", e: 1 },
+            { d: 1.2, from: 1, to: 0, label: "Release", e: 0.2 }, { d: 1.4, from: 0, to: 0, label: "Breathe", e: 0.2 },
+          ]),
+          pose: (tp) => ({ x: 0, y: 9, torso: 180, head: 180, belly: 10 - 5 * tp.m, arms: both({ u: [12, 2], f: [12, 2] }), legs: both({ t: [4, 52], s: [4, -60], f: [4, 0] }) }),
+          scene: (S, J, tp) => {
+            mat(S, -110, 75);
+            const b = lerp3(lerp3(J.shL, J.shR, 0.5), J.hip, 0.62);
+            const top = add(b, [0, 30 - 3 * tp.m, 0]), tip = add(b, [0, 15 - 4 * tp.m, 0]);
+            S.line(top, tip, 2.5, COL.focus, 3);
+            S.line(tip, add(tip, [-3, 4, 0]), 2.5, COL.focus, 3);
+            S.line(tip, add(tip, [3, 4, 0]), 2.5, COL.focus, 3);
+          },
+        },
+        recovery: {
+          cam: [30, 18], shadow: [10, 0, 70, 30], focus: [],
+          tempo: (t) => { const k = (t % 5) / 5; return { m: 0.5 - 0.5 * Math.cos(k * 2 * Math.PI), e: 0, label: "Ice 15 min if warm or tight", k }; },
+          pose: (tp) => ({ x: 0, y: 10, torso: 110 + 1.2 * tp.m, arms: both({ u: [12, -112], f: [12, -112] }), legs: both({ t: [4, -2], s: [4, -3], f: [4, 80] }) }),
+          scene: (S, J, tp) => {
+            mat(S, -70, 110);
+            S.obox(add(J.knL, [0, 5.5, -3]), [7.5, 0, 0], [0, 2.5 + 0.3 * tp.m, 0], [0, 0, 5.5], COL.ice, 2);
+          },
+        },
+      };
+
+      function frame(key, t) {
+        const ex = EX[key];
+        const cam = camera(ex.cam[0], ex.cam[1]);
+        const tp = ex.tempo(t);
+        const P = ex.pose(tp);
+        const J = skeleton(P);
+        const S = new Scene(cam);
+        S.abox(-4000, 4000, -2, 0, -4000, 4000, COL.floor, -3, -1e7, true);
+        const [sx, sz, rx, rz] = ex.shadow;
+        S.floorEllipse(J.hip[0] + sx, sz, rx, rz, "#1c2925", 0.1);
+        if (ex.scene) ex.scene(S, J, tp, P);
+        drawBody(S, J, P, tp, ex);
+        S.items.sort((a, b) => a.layer - b.layer || a.z - b.z);
+        return { tp, items: S.items };
+      }
+
+      const boxCache = {};
+      function viewBox(key) {
+        if (boxCache[key]) return boxCache[key];
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (let i = 0; i < 24; i++) {
+          for (const it of frame(key, i * 0.55).items) {
+            if (it.nb) continue;
+            for (const p of it.pts) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+          }
+        }
+        let w = x1 - x0 + 30, h = y1 - y0 + 60, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - 12;
+        const ar = 4 / 3;
+        if (w / h < ar) w = h * ar; else h = w / ar;
+        return (boxCache[key] = [cx - w / 2, cy - h / 2, w, h].map(f1));
+      }
+
+      function svg(key, t) {
+        const { tp, items } = frame(key, t);
+        return { tp, svg: `<svg viewBox="${viewBox(key).join(" ")}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">${items.map((i) => i.d).join("")}</svg>` };
+      }
+
+      const api = { svg, keys: Object.keys(EX) };
+      if (typeof module !== "undefined") module.exports = api; else root.Anim = api;
+    })(this);
 
     const steps = [
       { phase: "Warm-up · 01", title: "Arm circles", short: "Arm circles", dose: ["60 seconds", "30s each direction"], accent: "Gentle range", text: "Stand or sit tall. Extend your arms comfortably and draw smooth circles for 30 seconds forward, then 30 seconds backward.", cue: "Keep your shoulders down and relaxed. The movement should feel easy, not forced.", visual: "circles", timer: 60, timerLabel: "30s forward, then 30s backward" },
@@ -535,6 +1019,23 @@
     let timerId = null;
     const completed = new Set();
     const $ = (id) => document.getElementById(id);
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let vizKey = null, vizStart = 0, vizRaf = 0;
+    function drawVisual(now) {
+      const t = reduceMotion.matches ? 2.3 : (now - vizStart) / 1000;
+      const { svg, tp } = Anim.svg(vizKey, t);
+      $("visual").innerHTML = svg;
+      $("vizLabel").textContent = tp.label;
+      $("vizBar").style.width = `${Math.round((tp.k ?? 0) * 100)}%`;
+      if (!reduceMotion.matches) vizRaf = requestAnimationFrame(drawVisual);
+    }
+    function playVisual(key) {
+      cancelAnimationFrame(vizRaf);
+      vizKey = key;
+      vizStart = performance.now();
+      drawVisual(vizStart);
+    }
 
     function formatTime(value) {
       return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
@@ -566,7 +1067,7 @@
       $("phase").textContent = step.phase;
       $("title").textContent = step.title;
       $("counter").textContent = `${String(current + 1).padStart(2, "0")} / ${steps.length}`;
-      $("visual").innerHTML = visuals[selectedOption === "biceps" && step.options ? step.altVisual : step.visual]();
+      playVisual(selectedOption === "biceps" && step.options ? step.altVisual : step.visual);
       $("dose").innerHTML = step.dose.map((item, i) => `<span class="pill ${i === 0 ? "accent" : ""}">${item}</span>`).join("") + `<span class="pill">${step.accent}</span>`;
       $("instruction").textContent = selectedOption === "biceps" && step.options ? step.altText : step.text;
       $("cue").textContent = selectedOption === "biceps" && step.options ? step.altCue : step.cue;
