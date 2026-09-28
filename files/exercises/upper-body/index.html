@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eef2e8">
+  <meta name="description" content="A guided, IT-band-safe upper body and core gym workout.">
+  <title>Upper Body & Core — Guided Workout</title>
+  <style>
+    :root {
+      --ink: #1c2925;
+      --muted: #68746f;
+      --paper: #f8f7f2;
+      --sage: #dfe8dc;
+      --green: #174d3c;
+      --lime: #d9f275;
+      --coral: #ef765f;
+      --line: rgba(28, 41, 37, .12);
+      --shadow: 0 24px 60px rgba(34, 52, 45, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #e8eee5; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 8% 4%, rgba(217, 242, 117, .48), transparent 24rem),
+        radial-gradient(circle at 92% 88%, rgba(23, 77, 60, .11), transparent 30rem),
+        #eef2e8;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      color: white;
+      background: var(--green);
+      box-shadow: 0 8px 20px rgba(23, 77, 60, .2);
+    }
+    .brand-mark svg { width: 22px; }
+    .duration {
+      color: var(--green);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    main {
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: minmax(270px, .72fr) minmax(0, 1.7fr);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .75);
+      border-radius: 32px;
+      background: rgba(248, 247, 242, .92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    aside {
+      padding: 34px 28px;
+      color: white;
+      background: var(--green);
+      display: flex;
+      flex-direction: column;
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--lime);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 10ch;
+      margin: 0;
+      font: 800 clamp(2rem, 4vw, 3.7rem)/.98 Inter, ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: -.055em;
+    }
+    .intro {
+      margin: 18px 0 26px;
+      color: rgba(255, 255, 255, .68);
+      font-size: .92rem;
+      line-height: 1.55;
+    }
+
+    .step-list {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+      list-style: none;
+    }
+    .step-jump {
+      width: 100%;
+      padding: 9px 10px;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 9px;
+      border: 0;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, .56);
+      text-align: left;
+      background: transparent;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .step-jump:hover { color: white; background: rgba(255, 255, 255, .07); }
+    .step-jump.active { color: white; background: rgba(255, 255, 255, .12); }
+    .step-jump.done { color: rgba(217, 242, 117, .75); }
+    .step-jump span:last-child {
+      overflow: hidden;
+      font-size: .8rem;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .step-num {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .17);
+      border-radius: 50%;
+      font-size: .68rem;
+    }
+    .step-jump.active .step-num { color: var(--green); border-color: var(--lime); background: var(--lime); }
+    .step-jump.done .step-num::before { content: "✓"; }
+    .step-jump.done .step-num { font-size: 0; }
+    .step-jump.done .step-num::before { font-size: .72rem; }
+
+    .safety-button {
+      width: 100%;
+      margin-top: auto;
+      padding: 12px 15px;
+      border: 1px solid rgba(255, 255, 255, .17);
+      border-radius: 13px;
+      color: white;
+      font-weight: 600;
+      text-align: left;
+      background: rgba(255, 255, 255, .07);
+      cursor: pointer;
+    }
+    .safety-button span { margin-right: 8px; color: var(--lime); }
+
+    .stage {
+      min-width: 0;
+      padding: clamp(24px, 4.5vw, 58px);
+      display: flex;
+      flex-direction: column;
+    }
+    .stage-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .phase {
+      margin-bottom: 11px;
+      color: var(--coral);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 0;
+      font: 800 clamp(2rem, 4.5vw, 4.4rem)/.97 Inter, ui-sans-serif, system-ui, sans-serif;
+      letter-spacing: -.06em;
+    }
+    .counter {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font: 700 .82rem Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .exercise-grid {
+      min-height: 330px;
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: minmax(240px, .95fr) minmax(240px, 1fr);
+      align-items: center;
+      gap: clamp(24px, 5vw, 66px);
+    }
+    .visual {
+      position: relative;
+      min-height: 300px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(23, 77, 60, .08);
+      border-radius: 28px;
+      background:
+        linear-gradient(rgba(255, 255, 255, .35), rgba(255, 255, 255, 0)),
+        var(--sage);
+    }
+    .visual::after {
+      content: "";
+      position: absolute;
+      right: -35px;
+      bottom: -70px;
+      width: 190px;
+      height: 190px;
+      border: 42px solid rgba(255, 255, 255, .32);
+      border-radius: 50%;
+    }
+    .visual svg { z-index: 1; width: 88%; max-height: 290px; overflow: visible; }
+    .motion { animation: move 2.8s ease-in-out infinite; transform-box: fill-box; }
+    .pulse { animation: pulse 2.8s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+    @keyframes move { 0%, 15%, 85%, 100% { transform: translate(var(--x1, 0), var(--y1, 0)) rotate(var(--r1, 0)); } 45%, 60% { transform: translate(var(--x2, 0), var(--y2, -8px)) rotate(var(--r2, 0)); } }
+    @keyframes pulse { 0%, 100% { opacity: .25; transform: scale(.94); } 50% { opacity: .65; transform: scale(1.05); } }
+
+    .details { min-width: 0; }
+    .dose {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .pill {
+      padding: 7px 11px;
+      border-radius: 999px;
+      color: var(--green);
+      font-size: .75rem;
+      font-weight: 700;
+      background: var(--sage);
+    }
+    .pill.accent { background: var(--lime); }
+    .instruction {
+      margin: 0;
+      color: #3d4945;
+      font-size: clamp(.98rem, 1.5vw, 1.12rem);
+      line-height: 1.65;
+    }
+    .cue {
+      margin: 20px 0 0;
+      padding: 15px 17px;
+      border-left: 3px solid var(--coral);
+      border-radius: 0 12px 12px 0;
+      color: var(--ink);
+      font-size: .88rem;
+      font-weight: 600;
+      line-height: 1.45;
+      background: rgba(239, 118, 95, .08);
+    }
+
+    .option-toggle {
+      margin: 0 0 16px;
+      padding: 4px;
+      display: inline-flex;
+      border-radius: 12px;
+      background: var(--sage);
+    }
+    .option-toggle button {
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 700;
+      background: transparent;
+      cursor: pointer;
+    }
+    .option-toggle button.active { color: white; background: var(--green); }
+
+    .timer {
+      margin-top: 20px;
+      padding: 13px 15px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: white;
+    }
+    .timer-display {
+      min-width: 58px;
+      font: 800 1.35rem Inter, ui-sans-serif, system-ui, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-label { flex: 1; color: var(--muted); font-size: .78rem; line-height: 1.25; }
+    .timer button {
+      padding: 8px 13px;
+      border: 0;
+      border-radius: 10px;
+      color: white;
+      font-size: .76rem;
+      font-weight: 700;
+      background: var(--green);
+      cursor: pointer;
+    }
+
+    .controls {
+      margin-top: auto;
+      padding-top: 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+      border-top: 1px solid var(--line);
+    }
+    .nav {
+      height: 48px;
+      padding: 0 19px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--ink);
+      font-weight: 700;
+      background: transparent;
+      cursor: pointer;
+    }
+    .nav.primary { color: white; border-color: var(--green); background: var(--green); }
+    .nav:disabled { opacity: .3; cursor: default; }
+    .progress-track {
+      height: 6px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: var(--sage);
+    }
+    .progress {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--coral);
+      transition: width .35s ease;
+    }
+
+    footer { color: var(--muted); font-size: .72rem; text-align: center; }
+
+    dialog {
+      width: min(620px, calc(100% - 32px));
+      max-height: calc(100vh - 40px);
+      padding: 0;
+      overflow: auto;
+      border: 0;
+      border-radius: 24px;
+      color: var(--ink);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    dialog::backdrop { background: rgba(12, 29, 23, .72); backdrop-filter: blur(4px); }
+    .modal-content { padding: 30px; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .modal-head h3 { margin: 0; font: 800 1.6rem Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: -.04em; }
+    .close {
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      font-size: 1.25rem;
+      background: var(--green);
+      cursor: pointer;
+    }
+    .rules { margin: 22px 0 0; padding: 0; display: grid; gap: 14px; list-style: none; }
+    .rules li { padding: 15px; border-radius: 14px; background: var(--sage); line-height: 1.45; }
+    .rules strong { display: block; margin-bottom: 4px; color: var(--green); }
+    .disclaimer { margin: 18px 0 0; color: var(--muted); font-size: .79rem; line-height: 1.5; }
+
+    @media (max-width: 800px) {
+      .shell { width: min(100% - 20px, 650px); padding: 16px 0; }
+      header { padding: 0 5px; }
+      main { min-height: 0; grid-template-columns: 1fr; border-radius: 24px; }
+      aside { padding: 20px; }
+      aside h1, .intro, .step-list { display: none; }
+      .safety-button { margin-top: 0; text-align: center; }
+      .stage { padding: 26px 20px 22px; }
+      .exercise-grid { min-height: 0; margin-top: 22px; grid-template-columns: 1fr; gap: 22px; }
+      .visual { min-height: 250px; }
+      .visual svg { max-height: 235px; }
+      .controls { margin-top: 26px; grid-template-columns: 1fr 1fr; }
+      .progress-track { grid-column: 1 / -1; grid-row: 1; }
+      .nav { width: 100%; }
+      h2 { font-size: clamp(2rem, 10vw, 3.25rem); }
+    }
+    @media (max-width: 430px) {
+      .brand > span:last-child { display: none; }
+      .duration { font-size: .72rem; }
+      .stage-top { align-items: flex-start; }
+      .visual { min-height: 220px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>
+        </span>
+        <span>Recovery Routine</span>
+      </div>
+      <div class="duration">25–30 minutes · 13 steps</div>
+    </header>
+
+    <main>
+      <aside>
+        <p class="eyebrow">IT-band safe guide</p>
+        <h1>Upper body & core</h1>
+        <p class="intro">Move smoothly, let the machine support you, and keep the left leg neutral throughout.</p>
+        <ol class="step-list" id="stepList"></ol>
+        <button class="safety-button" id="safetyOpen"><span>✦</span> Review the 4 safety rules</button>
+      </aside>
+
+      <section class="stage" aria-live="polite">
+        <div class="stage-top">
+          <div>
+            <div class="phase" id="phase"></div>
+            <h2 id="title"></h2>
+          </div>
+          <div class="counter" id="counter"></div>
+        </div>
+
+        <div class="exercise-grid">
+          <div class="visual" id="visual" aria-label="Animated exercise demonstration"></div>
+          <div class="details">
+            <div class="option-toggle" id="optionToggle" hidden>
+              <button data-option="triceps" class="active">Triceps</button>
+              <button data-option="biceps">Biceps</button>
+            </div>
+            <div class="dose" id="dose"></div>
+            <p class="instruction" id="instruction"></p>
+            <p class="cue" id="cue"></p>
+            <div class="timer" id="timer">
+              <div class="timer-display" id="timerDisplay">01:00</div>
+              <div class="timer-label" id="timerLabel">Rest between sets</div>
+              <button id="timerButton">Start timer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="nav" id="previous">← Previous</button>
+          <div class="progress-track" aria-label="Workout progress"><div class="progress" id="progress"></div></div>
+          <button class="nav primary" id="next">Complete & next →</button>
+        </div>
+      </section>
+    </main>
+    <footer>Use pain—not effort—as your stop signal. Follow your clinician’s guidance for your specific recovery.</footer>
+  </div>
+
+  <dialog id="safetyDialog">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h3>The 4 golden rules</h3>
+        <button class="close" id="safetyClose" aria-label="Close safety rules">×</button>
+      </div>
+      <ul class="rules">
+        <li><strong>1. Zero heel or leg drive</strong>Do not push into the floor or foot pegs to lift more. Let the machine backrest support the load.</li>
+        <li><strong>2. Keep the left leg neutral</strong>Keep it straight and un-angled. Do not tuck the foot under the seat or rotate the ankle or knee outward.</li>
+        <li><strong>3. No standing weight shift</strong>For cable work, use soft knees and distribute weight evenly. Never lean or shift onto the left leg.</li>
+        <li><strong>4. No leg movement under core tension</strong>Skip bicycles, mountain climbers, and leg raises while recovering.</li>
+      </ul>
+      <p class="disclaimer">This guide is informational, not medical advice. Stop if you feel pain, warmth, pulling, or instability around the outer hip or knee, and check with your physical therapist or clinician.</p>
+    </div>
+  </dialog>
+
+  <script>
+    const C = { ink: "#1c2925", green: "#174d3c", coral: "#ef765f", lime: "#d9f275", skin: "#d9a17f", white: "#f8f7f2" };
+    const svg = (body) => `<svg viewBox="0 0 360 270" role="img" aria-hidden="true">${body}</svg>`;
+    const person = (extra = "", pose = "") => `
+      <g stroke="${C.ink}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" ${pose}>
+        <circle cx="183" cy="70" r="19" fill="${C.skin}" stroke="none"/>
+        <path d="M181 94 L177 160"/>
+        <path d="M178 158 L146 217 M178 158 L211 217"/>
+        ${extra}
+      </g>`;
+    const floor = `<path d="M45 231H315" stroke="${C.green}" stroke-width="4" stroke-linecap="round" opacity=".25"/>`;
+    const machine = `<g fill="none" stroke="${C.green}" stroke-width="7" stroke-linecap="round"><path d="M86 216V71M86 150h61M147 150v67M84 216h77"/><path d="M78 66h18" stroke="${C.coral}"/></g>`;
+
+    const visuals = {
+      circles: () => svg(`${floor}<circle cx="180" cy="135" r="88" fill="none" stroke="${C.white}" stroke-width="34" opacity=".45"/><g class="motion" style="--r1:-12deg;--r2:12deg;transform-origin:180px 98px">${person(`<path d="M180 105 L121 117 M180 105 L239 117"/>`)}</g><path d="M85 92a105 105 0 0 1 190 0" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 10"/>`),
+      twists: () => svg(`${floor}<rect x="124" y="177" width="112" height="13" rx="6" fill="${C.green}" opacity=".35"/><g class="motion" style="--r1:-7deg;--r2:7deg;transform-origin:180px 155px">${person(`<path d="M180 108 L131 132 M180 108 L229 132"/>`)}</g><path d="M109 119c17-19 40-28 66-28M251 119c-17-19-40-28-66-28" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round"/>`),
+      chest: () => svg(`${machine}<rect x="135" y="103" width="14" height="75" rx="7" fill="${C.green}" opacity=".45"/><g>${person(`<g class="motion" style="--x1:-12px;--x2:25px"><path d="M180 105 L221 128 L263 128 M180 105 L221 151 L263 151"/><path d="M265 111v56" stroke="${C.coral}"/></g>`)}</g><circle class="pulse" cx="184" cy="111" r="30" fill="${C.coral}" stroke="none"/>`),
+      row: () => svg(`${floor}<rect x="114" y="183" width="91" height="12" rx="6" fill="${C.green}" opacity=".35"/><path d="M255 64v154M246 64h18" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><g>${person(`<g class="motion" style="--x1:32px;--x2:0px"><path d="M180 106 L220 130 L258 132 M180 106 L219 151 L258 153"/><path d="M258 117v51" stroke="${C.coral}"/></g>`)}</g><ellipse class="pulse" cx="170" cy="118" rx="34" ry="43" fill="${C.coral}" stroke="none"/>`),
+      pulldown: () => svg(`<path d="M75 47h210M180 47v22" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><rect x="133" y="183" width="94" height="12" rx="6" fill="${C.green}" opacity=".35"/>${person(`<g class="motion" style="--y1:-30px;--y2:4px"><path d="M180 105 L135 70 L100 61 M180 105 L225 70 L260 61"/><path d="M92 58h176" stroke="${C.coral}"/></g>`)}<ellipse class="pulse" cx="180" cy="121" rx="38" ry="48" fill="${C.coral}" stroke="none"/>`),
+      shoulder: () => svg(`${machine}<rect x="135" y="105" width="14" height="74" rx="7" fill="${C.green}" opacity=".45"/>${person(`<g class="motion" style="--y1:22px;--y2:-18px"><path d="M180 106 L146 87 L130 55 M180 106 L214 87 L230 55"/><path d="M118 52h124" stroke="${C.coral}"/></g>`)}<circle class="pulse" cx="180" cy="105" r="41" fill="${C.coral}" stroke="none"/>`),
+      triceps: () => svg(`<path d="M275 40v191M268 40h14" stroke="${C.green}" stroke-width="7" stroke-linecap="round"/><path d="M275 51L225 85" stroke="${C.coral}" stroke-width="4"/>${floor}${person(`<g class="motion" style="--y1:-12px;--y2:18px"><path d="M180 105 L212 119 L225 91 M180 105 L207 145 L229 91"/></g>`)}<ellipse class="pulse" cx="204" cy="127" rx="20" ry="42" fill="${C.coral}" stroke="none"/>`),
+      biceps: () => svg(`${machine}<rect x="128" y="142" width="105" height="17" rx="8" fill="${C.green}"/>${person(`<g class="motion" style="--r1:13deg;--r2:-20deg;transform-origin:207px 140px"><path d="M180 106 L207 137 L247 157 M180 106 L194 143 L232 166"/></g>`)}<circle class="pulse" cx="200" cy="132" r="25" fill="${C.coral}" stroke="none"/>`),
+      deadbug: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L133 93 M180 105 L227 93"/><path d="M178 158 L139 175 L139 211 M178 158 L217 175 L217 211"/>`)}</g><g class="motion" style="--x1:-20px;--x2:12px"><path d="M128 90L72 90" stroke="${C.coral}" stroke-width="8" stroke-linecap="round"/></g>`),
+      hollow: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L144 81 M180 105 L216 81"/><path d="M178 158 L144 178 L144 215 M178 158 L212 178 L212 215"/>`)}</g><path class="pulse" d="M116 175Q180 145 244 175" fill="none" stroke="${C.coral}" stroke-width="13" stroke-linecap="round"/>`),
+      seatedtwist: () => svg(`${floor}<g transform="rotate(-9 180 140)">${person(`<g class="motion" style="--r1:-13deg;--r2:13deg;transform-origin:180px 112px"><path d="M180 105 L139 124 M180 105 L221 124"/></g><path d="M178 158 L137 195 L102 220 M178 158 L215 195 L251 220"/>`)}</g><path d="M119 101a74 74 0 0 1 122 0" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round"/>`),
+      plank: () => svg(`${floor}<g transform="rotate(70 180 145) translate(-18 8)">${person(`<path d="M180 105 L141 134 L106 134 M180 105 L219 134 L254 134"/>`)}</g><path class="pulse" d="M112 145L226 104" stroke="${C.coral}" stroke-width="14" stroke-linecap="round"/>`),
+      vacuum: () => svg(`${floor}<g transform="rotate(90 180 150) translate(0 8)">${person(`<path d="M180 105 L150 85 M180 105 L210 85"/><path d="M178 158 L143 180 L143 218 M178 158 L213 180 L213 218"/>`)}</g><circle class="pulse" cx="180" cy="160" r="23" fill="${C.coral}"/><path d="M149 160h20M211 160h-20" stroke="${C.green}" stroke-width="5" stroke-linecap="round"/>`),
+      recovery: () => svg(`${floor}<circle cx="180" cy="128" r="76" fill="${C.white}" opacity=".45"/><path d="M151 131l20 20 43-52" fill="none" stroke="${C.green}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><g class="pulse"><circle cx="180" cy="128" r="91" fill="none" stroke="${C.lime}" stroke-width="10"/></g>`),
+    };
+
+    const steps = [
+      { phase: "Warm-up · 01", title: "Arm circles", short: "Arm circles", dose: ["60 seconds", "30s each direction"], accent: "Gentle range", text: "Stand or sit tall. Extend your arms comfortably and draw smooth circles for 30 seconds forward, then 30 seconds backward.", cue: "Keep your shoulders down and relaxed. The movement should feel easy, not forced.", visual: "circles", timer: 60, timerLabel: "30s forward, then 30s backward" },
+      { phase: "Warm-up · 02", title: "Seated torso twists", short: "Torso twists", dose: ["1–2 minutes", "Feet flat"], accent: "Smooth rotation", text: "Sit upright on a bench or chair with both feet flat. Rotate your upper torso smoothly from left to right.", cue: "Let your shoulders and rib cage turn together. Keep both knees facing forward.", visual: "twists", timer: 90, timerLabel: "Controlled warm-up" },
+      { phase: "Upper body · 01", title: "Seated chest press", short: "Chest press", dose: ["3 sets", "10–12 reps"], accent: "Chest · shoulders · triceps", text: "Adjust the seat so the handles meet your mid-chest. Press forward for 2 seconds, then return for 2 seconds.", cue: "Back stays supported. Do not arch or press through your feet or the foot pegs.", visual: "chest", timer: 60, timerLabel: "Rest between sets" },
+      { phase: "Upper body · 02", title: "Seated row", short: "Seated row", dose: ["3 sets", "10–12 reps"], accent: "Lats · rhomboids · upper back", text: "Set the chest pad so your arms can fully extend without pulling your torso forward. Pull back and squeeze your shoulder blades, then return slowly.", cue: "Let the chest pad support you so your legs never need to brace.", visual: "row", timer: 60, timerLabel: "Rest between sets" },
+      { phase: "Upper body · 03", title: "Lat pulldown", short: "Lat pulldown", dose: ["3 sets", "10–12 reps"], accent: "Lats · middle back · biceps", text: "Set the thigh pad for light stability. Use a grip slightly wider than your shoulders and pull the bar to your upper chest.", cue: "Check that the pad creates no lateral pressure on the left knee. Control the return for 2 seconds.", visual: "pulldown", timer: 60, timerLabel: "Rest between sets" },
+      { phase: "Upper body · 04", title: "Shoulder press", short: "Shoulder press", dose: ["2 sets", "10–12 reps"], accent: "Deltoids · upper triceps", text: "Sit with your back flush to the backrest. Press overhead smoothly, then lower with control.", cue: "Do not drive off the floor with your legs. Reduce the weight if your back lifts.", visual: "shoulder", timer: 60, timerLabel: "Rest between sets" },
+      { phase: "Upper body · 05", title: "Arms", short: "Arms", dose: ["2 sets", "12–15 reps"], accent: "Triceps or biceps", text: "For pushdowns, stand evenly on both feet with soft knees. Keep elbows at your sides and extend down.", altText: "Sit at the curl machine with your upper arms resting on the pad. Curl the handles smoothly toward your shoulders.", cue: "Never lean into or shift your weight onto the left leg.", altCue: "Stay supported by the seat and pad; keep the left leg neutral.", visual: "triceps", altVisual: "biceps", timer: 60, timerLabel: "Rest between sets", options: true },
+      { phase: "Core circuit · 01", title: "Upper-body dead bug", short: "Dead bug", dose: ["45s work", "15s transition"], accent: "Lower-back control", text: "Lie flat with your knees held still at 90°. Alternate reaching one arm overhead while keeping your lower back in contact with the mat.", cue: "Only the arms move. Stop if holding the knees up creates hip or outer-knee discomfort.", visual: "deadbug", timer: 45, timerLabel: "Work interval", core: true },
+      { phase: "Core circuit · 02", title: "Hollow body hold", short: "Hollow hold", dose: ["45s work", "15s transition"], accent: "Deep core tension", text: "Lie flat, press your lower back into the floor, and lift your head and shoulders slightly. Keep both knees bent at 90°.", cue: "Keep the legs completely still to remove repeated knee and hip movement.", visual: "hollow", timer: 45, timerLabel: "Work interval", core: true },
+      { phase: "Core circuit · 03", title: "Grounded seated twists", short: "Seated twists", dose: ["45s work", "15s transition"], accent: "Controlled rotation", text: "Sit with both feet planted flat and lean back slightly. Rotate your shoulders smoothly from side to side.", cue: "Both knees stay quiet and point forward—rotate through the upper torso only.", visual: "seatedtwist", timer: 45, timerLabel: "Work interval", core: true },
+      { phase: "Core circuit · 04", title: "Knee forearm plank", short: "Knee plank", dose: ["45s work", "15s transition"], accent: "Brace · no toe leverage", text: "Place your forearms and knees on the mat. Tuck your pelvis gently and form a straight line from your head through your knees.", cue: "Brace without pushing through your toes. Pad your knees and stop if the position irritates the left side.", visual: "plank", timer: 45, timerLabel: "Work interval", core: true },
+      { phase: "Core circuit · 05", title: "Vacuum hold", short: "Vacuum hold", dose: ["45 seconds", "10s bursts"], accent: "Zero joint movement", text: "Lie flat and exhale completely. Draw your belly button inward toward your spine for 10-second bursts, releasing briefly between efforts.", cue: "Keep breathing gently between holds. No leg or joint movement.", visual: "vacuum", timer: 45, timerLabel: "10-second holds with brief releases", core: true },
+      { phase: "Workout complete", title: "Recover & check in", short: "Recovery", dose: ["Cool down", "Notice symptoms"], accent: "Move gently", text: "Walk out easy and notice how the outer hip and knee feel. If the left knee feels warm or tight, apply ice for 15 minutes.", cue: "Avoid rolling directly over the painful outer-knee spot. Only roll the glute and TFL area gently if your physical therapist has cleared it.", visual: "recovery", timer: 0 }
+    ];
+
+    let current = 0;
+    let selectedOption = "triceps";
+    let seconds = 0;
+    let timerId = null;
+    const completed = new Set();
+    const $ = (id) => document.getElementById(id);
+
+    function formatTime(value) {
+      return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+    }
+
+    function stopTimer(reset = false) {
+      clearInterval(timerId);
+      timerId = null;
+      if (reset) seconds = steps[current].timer || 0;
+      $("timerButton").textContent = "Start timer";
+      $("timerDisplay").textContent = formatTime(seconds);
+    }
+
+    function renderList() {
+      $("stepList").innerHTML = steps.map((step, index) => `
+        <li><button class="step-jump ${index === current ? "active" : ""} ${completed.has(index) ? "done" : ""}" data-index="${index}" ${index === current ? 'aria-current="step"' : ""}>
+          <span class="step-num">${index + 1}</span><span>${step.short}</span>
+        </button></li>`).join("");
+      document.querySelectorAll(".step-jump").forEach((button) => button.addEventListener("click", () => {
+        current = Number(button.dataset.index);
+        render();
+      }));
+    }
+
+    function render() {
+      stopTimer();
+      const step = steps[current];
+      seconds = step.timer || 0;
+      $("phase").textContent = step.phase;
+      $("title").textContent = step.title;
+      $("counter").textContent = `${String(current + 1).padStart(2, "0")} / ${steps.length}`;
+      $("visual").innerHTML = visuals[selectedOption === "biceps" && step.options ? step.altVisual : step.visual]();
+      $("dose").innerHTML = step.dose.map((item, i) => `<span class="pill ${i === 0 ? "accent" : ""}">${item}</span>`).join("") + `<span class="pill">${step.accent}</span>`;
+      $("instruction").textContent = selectedOption === "biceps" && step.options ? step.altText : step.text;
+      $("cue").textContent = selectedOption === "biceps" && step.options ? step.altCue : step.cue;
+      $("optionToggle").hidden = !step.options;
+      $("timer").hidden = !step.timer;
+      $("timerDisplay").textContent = formatTime(seconds);
+      $("timerLabel").textContent = step.timerLabel || "";
+      $("previous").disabled = current === 0;
+      $("next").textContent = current === steps.length - 1 ? "Start again ↻" : "Complete & next →";
+      $("progress").style.width = `${((current + 1) / steps.length) * 100}%`;
+      renderList();
+    }
+
+    $("previous").addEventListener("click", () => {
+      if (current > 0) current--;
+      render();
+    });
+    $("next").addEventListener("click", () => {
+      completed.add(current);
+      current = current === steps.length - 1 ? 0 : current + 1;
+      if (current === 0) completed.clear();
+      render();
+    });
+    $("timerButton").addEventListener("click", () => {
+      if (timerId) {
+        stopTimer();
+        return;
+      }
+      if (seconds <= 0) seconds = steps[current].timer;
+      $("timerButton").textContent = "Pause";
+      timerId = setInterval(() => {
+        seconds--;
+        $("timerDisplay").textContent = formatTime(seconds);
+        if (seconds <= 0) {
+          stopTimer();
+          $("timerButton").textContent = "Restart";
+          if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+        }
+      }, 1000);
+    });
+    $("optionToggle").addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      selectedOption = button.dataset.option;
+      document.querySelectorAll("#optionToggle button").forEach((item) => item.classList.toggle("active", item === button));
+      render();
+    });
+
+    const dialog = $("safetyDialog");
+    $("safetyOpen").addEventListener("click", () => dialog.showModal());
+    $("safetyClose").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" && !dialog.open) $("next").click();
+      if (event.key === "ArrowLeft" && !dialog.open) $("previous").click();
+    });
+
+    render();
+  </script>
+</body>
+</html>
