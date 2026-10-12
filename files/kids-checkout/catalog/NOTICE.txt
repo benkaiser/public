@@ -1,0 +1,31 @@
+Kids Checkout product catalog
+
+Contains information from Open Food Facts, made available under the Open
+Database License (ODbL) 1.0. Individual database contents are available under
+the Database Contents License (DbCL) 1.0.
+
+Open Food Facts and its contributors:
+https://world.openfoodfacts.org/
+
+This is a modified database, not an official Open Food Facts application.
+Modifications include country-balanced selection, deduplication, product-name
+cleanup, conservative child-safety filtering, illustration assignments and
+generated approximate USD play prices. Prices are pretend, not retail quotes.
+No Open Food Facts photographs are included.
+
+The derived products.sqlite database is made available under ODbL 1.0.
+Individual database contents are available under DbCL 1.0. These database
+licenses do not license the application code, original artwork or sound effects.
+
+Public derived database:
+https://cdn.benkaiser.dev/kids-checkout/catalog/products.sqlite
+
+Attribution:
+https://cdn.benkaiser.dev/kids-checkout/catalog/NOTICE.txt
+
+License texts (also bundled for offline reading):
+https://cdn.benkaiser.dev/kids-checkout/catalog/ODbL-1.0.txt
+https://cdn.benkaiser.dev/kids-checkout/catalog/DbCL-1.0.txt
+
+Upstream license information:
+https://world.openfoodfacts.org/terms-of-use
