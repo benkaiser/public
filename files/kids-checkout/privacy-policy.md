@@ -33,10 +33,10 @@ The app is designed for children and does not knowingly collect personal
 information from children. It has no social features, user-generated content,
 advertising identifiers or third-party tracking SDKs.
 
-Grown-ups can read this policy offline in the app: hold the small info button
-for two seconds, then choose Privacy Policy. Opening an external website,
-email app or system settings requires a separate grown-up check. That check is
-a local calculation; answers are neither saved nor transmitted.
+Privacy and support pages are linked from the app's store listing. The in-app
+information panel contains offline licenses only, with no external links.
+Opening camera permission settings requires a separate grown-up check. That
+check is a local calculation; answers are neither saved nor transmitted.
 
 ## Permissions and choices
 
@@ -51,10 +51,10 @@ the app's local files.
 
 ## External websites, stores and support
 
-The app itself works offline. After a grown-up check, you can choose to open a
-policy/support page, product-data attribution or catalog download in your
-browser, or compose a support email in your email app. Those services operate
-outside Kids Checkout. A website host, browser, operating system, app store or
+The app itself works offline and does not link to websites or compose support
+emails. Privacy/support pages, product-data attribution and catalog downloads
+are available outside the app through its store listing or public pages.
+A website host, browser, operating system, app store or
 email provider may handle connection details such as an IP address under its
 own policies. No cart, camera image or scanned barcode is attached by the app.
 
