@@ -56,18 +56,23 @@ Use Guided Access or app pinning when device containment is needed.
 
 The [support page](https://cdn.benkaiser.dev/kids-photo-gallery/support.html)
 explains setup and recovery. Support and privacy questions can be directed to
-the Kids Photo Gallery maintainers through
-[public support issue form](https://github.com/benkaiser/public/issues/new?title=Kids%20Photo%20Gallery%20support).
-Issues are public: do not include a child's photos or videos, personal
-information, passwords, or private library details.
+the Kids Photo Gallery maintainers at
+[kidsphotogallery_support@kaiserapps.com](mailto:kidsphotogallery_support@kaiserapps.com).
+Do not include a child's photos or videos, names, sensitive personal
+information, passwords, or private library details in support emails.
 
-Opening these pages or GitHub takes you to an external web service. Your browser
-and those services handle web requests under their own privacy policies.
-Information you choose to submit to GitHub is separate from the app's on-device
-photo viewing; the app does not submit support reports automatically.
+If you email us, we receive your email address and the information you choose
+to include, and use them to respond to your support or privacy request.
+Email support is separate from the app's on-device photo viewing; the app does
+not submit support reports automatically.
+
+Opening these pages takes you to an external web service. Your browser and
+those services handle web requests under their own privacy policies. Email
+delivery is handled by your email provider and ours under their applicable
+terms and privacy policies.
 
 ## Contact and changes
 
-Use the GitHub issues link above for non-sensitive privacy questions. If the
+Use the support email above for privacy questions or follow-up. If the
 app's data handling changes, this policy will be updated with a new effective
 date. Review the policy associated with the version you use.

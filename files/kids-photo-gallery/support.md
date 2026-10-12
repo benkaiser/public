@@ -106,15 +106,17 @@ for details, including local caches and platform backups.
 
 ## Get help or report a problem
 
-Parents and guardians can contact the maintainers through
-[public support issue form](https://github.com/benkaiser/public/issues/new?title=Kids%20Photo%20Gallery%20support).
-A GitHub account may be needed to post. Issues are public.
+Parents and guardians can email
+[kidsphotogallery_support@kaiserapps.com](mailto:kidsphotogallery_support@kaiserapps.com)
+for help or follow-up. No GitHub account is needed.
 
 Include the device model, OS version, app version, what you expected, and steps
 to reproduce the problem. Describe media problems without attaching private
 media; use synthetic examples if needed.
 
-**Do not post children's photos or videos, names, personal information,
+**Do not send children's photos or videos, names, sensitive personal information,
 passwords, private album details, or unreviewed diagnostic logs.**
-The app does not send support reports automatically. GitHub handles anything
-you choose to submit under its own terms and privacy policy.
+The app does not send support reports automatically. We receive your email
+address and whatever you choose to include so we can respond to your request.
+See the [privacy policy](https://cdn.benkaiser.dev/kids-photo-gallery/privacy-policy.html)
+for more about email support.
