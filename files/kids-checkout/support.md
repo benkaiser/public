@@ -35,9 +35,10 @@ or Bluetooth audio devices if a sound cannot be heard.
 ## Privacy and licenses
 
 Hold the small info button in the food-grid header for two seconds to read the
-offline third-party licenses. A short tap explains that the button must be held.
-The license panel has no external links or parental challenge. Privacy and
-support are available through the store listing.
+offline privacy policy and third-party licenses. A short tap explains that the
+button must be held. The information panel has no tabs, external links or
+parental challenge. Public privacy and support pages are also available through
+the store listing.
 
 Privacy policy:
 https://cdn.benkaiser.dev/kids-checkout/privacy-policy.html

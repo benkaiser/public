@@ -1,6 +1,6 @@
 # Kids Checkout Privacy Policy
 
-Effective date: 12 October 2026
+Effective date: 19 October 2026
 
 Kids Checkout is a pretend-shopping game for children, provided by Kaiser Apps.
 It has no accounts, advertising, in-app purchases, analytics or tracking.
@@ -33,8 +33,9 @@ The app is designed for children and does not knowingly collect personal
 information from children. It has no social features, user-generated content,
 advertising identifiers or third-party tracking SDKs.
 
-Privacy and support pages are linked from the app's store listing. The in-app
-information panel contains offline licenses only, with no external links.
+Privacy and support pages are linked from the app's store listing. Hold the
+small info button for two seconds to read this policy and the licenses directly
+in the app. The information panel is fully offline, with no external links.
 Opening camera permission settings requires a separate grown-up check. That
 check is a local calculation; answers are neither saved nor transmitted.
 
