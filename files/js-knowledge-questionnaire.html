@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JavaScript Knowledge Gap Questionnaire</title>
+<style>
+  :root { --bg:#fafafa; --fg:#1d1d1f; --card:#fff; --muted:#666; --accent:#2563eb; --border:#ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e8e8ea; --card:#1f2229; --muted:#9aa0a6; --accent:#6ea0ff; --border:#343944; } }
+  * { box-sizing: border-box; }
+  body { font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg); margin:0; }
+  main { max-width:860px; margin:0 auto; padding:1rem 1rem 6rem; }
+  h1 { margin-bottom:.25rem; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  section { margin-top:2rem; }
+  h2 { border-bottom:2px solid var(--accent); padding-bottom:.25rem; }
+  .q { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:.8rem 1rem; margin:.7rem 0; }
+  .q p { margin:0 0 .5rem; font-weight:600; }
+  .scale { display:flex; flex-wrap:wrap; gap:.4rem; }
+  .scale label { border:1px solid var(--border); border-radius:6px; padding:.25rem .6rem; cursor:pointer; font-size:.85rem; }
+  .scale input { margin-right:.3rem; }
+  .scale label:has(input:checked) { background:var(--accent); color:#fff; border-color:var(--accent); }
+  textarea, input[type=text] { width:100%; margin-top:.5rem; padding:.4rem; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--fg); font:inherit; }
+  textarea { min-height:2.2rem; resize:vertical; }
+  .bar { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); padding:.6rem; display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap; align-items:center; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:.5rem .9rem; font:inherit; cursor:pointer; }
+  button.secondary { background:transparent; color:var(--fg); border:1px solid var(--border); }
+  #progress { font-size:.85rem; color:var(--muted); }
+  #toast { position:fixed; top:1rem; right:1rem; background:#16a34a; color:#fff; padding:.5rem 1rem; border-radius:6px; opacity:0; transition:opacity .3s; pointer-events:none; }
+  #toast.show { opacity:1; }
+  dialog { max-width:800px; width:92%; background:var(--card); color:var(--fg); border:1px solid var(--border); border-radius:8px; }
+  dialog textarea { min-height:50vh; font-family:ui-monospace,monospace; font-size:.8rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>JavaScript Knowledge Gap Questionnaire</h1>
+  <p class="muted">Rate your confidence for each topic honestly — the goal is to find gaps, not to score well.
+    Answers save automatically in this browser. Use "Share link" to send your answers to your mentor.</p>
+  <div id="form"></div>
+</main>
+
+<div class="bar">
+  <span id="progress"></span>
+  <button id="share">Copy share link</button>
+  <button id="md">Export Markdown</button>
+  <button id="dl" class="secondary">Download .md</button>
+  <button id="reset" class="secondary">Clear all</button>
+</div>
+<div id="toast"></div>
+<dialog id="dlg">
+  <p><strong>Markdown export</strong> <span class="muted">(copy and paste into an LLM or message)</span></p>
+  <textarea id="out" readonly></textarea>
+  <p><button id="copyMd">Copy</button> <button class="secondary" id="close">Close</button></p>
+</dialog>
+
+<script>
+const SCALE = [
+  [0, "Never heard of it"],
+  [1, "Heard of it"],
+  [2, "Used it, shaky"],
+  [3, "Comfortable"],
+  [4, "Could teach it"],
+];
+
+const SECTIONS = [
+  { title: "1. Language fundamentals", qs: [
+    "Primitive types vs objects, and how pass-by-value / pass-by-reference-of-object behaves",
+    "var vs let vs const, block scope, and the temporal dead zone",
+    "Type coercion, == vs ===, truthy/falsy, and Object.is",
+    "Hoisting of variables and function declarations",
+    "Functions as first-class values, arrow vs regular functions",
+    "How `this` is determined (call, apply, bind, method calls, arrow functions)",
+    "Closures and common uses/pitfalls (e.g. loops, memory retention)",
+    "Prototypes and prototype chain; how `class` is syntactic sugar over them",
+    "Destructuring, spread/rest, template literals, optional chaining, nullish coalescing",
+    "Iterators, iterables, generators, and for...of vs for...in",
+    "Map, Set, WeakMap, WeakSet, Symbol, BigInt",
+    "Array methods (map/filter/reduce/flatMap etc.) and immutability patterns",
+    "Error handling: try/catch/finally, custom errors, error causes",
+    "Getters/setters, Object.defineProperty, property descriptors, freezing",
+    "Proxy and Reflect",
+  ]},
+  { title: "2. Asynchronous JavaScript & the runtime", qs: [
+    "The event loop: call stack, task queue, microtask queue",
+    "Order of execution of setTimeout, Promise callbacks, queueMicrotask, requestAnimationFrame",
+    "Callbacks and 'callback hell'",
+    "Promises: chaining, error propagation, Promise.all / allSettled / race / any",
+    "async/await and how it maps to promises; error handling with it",
+    "Concurrency vs parallelism in JS; avoiding blocking the main thread",
+    "AbortController and cancelling async work",
+    "fetch API, streams, and handling HTTP errors",
+    "Unhandled rejections and how they surface",
+  ]},
+  { title: "3. Modules, tooling & ecosystem", qs: [
+    "ES modules vs CommonJS; import/export semantics (live bindings, cycles)",
+    "Dynamic import() and code splitting",
+    "npm / package.json: dependencies vs devDependencies, semver, lockfiles",
+    "Bundlers (webpack, Vite, esbuild, Rollup) and what they actually do",
+    "Transpilation and polyfills (Babel, SWC, browserslist)",
+    "Tree shaking and side effects",
+    "TypeScript: types, generics, narrowing, utility types, tsconfig",
+    "Linting and formatting (ESLint, Prettier)",
+    "Node.js basics: fs, streams, process, event emitter, the Node event loop phases",
+    "Testing: unit, integration, e2e (Jest/Vitest, Playwright/Cypress), mocking",
+  ]},
+  { title: "4. Browser & DOM", qs: [
+    "DOM tree, querying and manipulating nodes",
+    "Event handling: bubbling, capturing, delegation, preventDefault vs stopPropagation",
+    "Critical rendering path: parsing, style, layout, paint, composite",
+    "Reflow/layout thrashing and how to avoid it",
+    "Web storage: localStorage, sessionStorage, cookies, IndexedDB",
+    "Same-origin policy, CORS, and preflight requests",
+    "Web Components, custom elements, Shadow DOM",
+    "IntersectionObserver, ResizeObserver, MutationObserver",
+    "History API / client-side routing and URL fragments",
+  ]},
+  { title: "5. Advanced browser APIs", qs: [
+    "Web Workers (dedicated/shared), postMessage, structured clone, transferables",
+    "Service Workers: lifecycle (install/activate/fetch), scope, update flow",
+    "Caching strategies with the Cache API (cache-first, stale-while-revalidate, etc.)",
+    "Progressive Web Apps: manifest, offline support, installability",
+    "Push notifications and Background Sync",
+    "SharedArrayBuffer, Atomics, and OffscreenCanvas",
+    "WebAssembly: what it is and how it interacts with JS",
+    "WebSockets, Server-Sent Events, and WebRTC",
+  ]},
+  { title: "6. Performance & profiling", qs: [
+    "Using Chrome DevTools Performance panel to find long tasks and bottlenecks",
+    "Reading flame charts",
+    "Memory profiling: heap snapshots, detecting leaks, garbage collection basics",
+    "Core Web Vitals (LCP, INP, CLS) and what influences them",
+    "Lighthouse / WebPageTest and interpreting results",
+    "Bundle size analysis and reduction",
+    "Lazy loading, preloading, prefetching, resource hints",
+    "Debouncing, throttling, memoization, virtualization of long lists",
+    "How V8 works: JIT, hidden classes, inline caching, deopts",
+    "Network waterfall analysis, HTTP/2, caching headers, CDN usage",
+  ]},
+  { title: "7. React & frontend frameworks", qs: [
+    "JSX and how it compiles to JavaScript",
+    "Components, props, state, and unidirectional data flow",
+    "Hooks: useState, useEffect (dependencies, cleanup), useRef",
+    "useMemo, useCallback, React.memo and when they actually help",
+    "useContext and context performance pitfalls",
+    "useReducer and state management patterns (Redux, Zustand, etc.)",
+    "Reconciliation, the virtual DOM, and keys",
+    "Controlled vs uncontrolled components, forms",
+    "Data fetching (React Query/SWR), Suspense, error boundaries",
+    "Server-side rendering, hydration, and React Server Components",
+    "Next.js / Remix routing and rendering modes (SSR, SSG, ISR)",
+    "How other frameworks differ (Vue, Svelte, Angular, signals-based reactivity)",
+    "Testing React components (React Testing Library)",
+  ]},
+  { title: "8. Security & quality", qs: [
+    "XSS (reflected, stored, DOM-based) and prevention; Content Security Policy",
+    "CSRF and cookie flags (HttpOnly, Secure, SameSite)",
+    "Authentication in web apps: sessions vs JWT, OAuth/OIDC basics",
+    "Supply-chain risks in npm dependencies",
+    "Accessibility fundamentals (semantic HTML, ARIA, keyboard navigation)",
+    "Debugging: breakpoints, source maps, console tools, debugging async code",
+  ]},
+];
+
+const KEY = "js-questionnaire-v1";
+const state = { a: {} }; // a: { id: { r: 0-4, n: "note" } }
+const ids = [];
+SECTIONS.forEach((s, si) => s.qs.forEach((_, qi) => ids.push(`${si}.${qi}`)));
+
+function load() {
+  let loaded = null;
+  if (location.hash.startsWith("#d=")) {
+    try { loaded = decode(location.hash.slice(3)); } catch (e) { alert("Could not read shared link data."); }
+  }
+  if (!loaded) {
+    try { loaded = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  }
+  if (loaded) state.a = loaded.a || {};
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); updateProgress(); }
+
+// Compact encoding: [[id, rating, note]...] -> JSON -> UTF-8 -> base64url
+function encode() {
+  const rows = Object.entries(state.a)
+    .filter(([, v]) => v.r !== undefined || v.n)
+    .map(([id, v]) => v.n ? [id, v.r ?? -1, v.n] : [id, v.r]);
+  const bytes = new TextEncoder().encode(JSON.stringify(rows));
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decode(s) {
+  s = s.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(s + "=".repeat((4 - s.length % 4) % 4));
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  const rows = JSON.parse(new TextDecoder().decode(bytes));
+  const a = {};
+  rows.forEach(([id, r, n]) => { a[id] = {}; if (r >= 0) a[id].r = r; if (n) a[id].n = n; });
+  return { a };
+}
+
+function render() {
+  const form = document.getElementById("form");
+  SECTIONS.forEach((s, si) => {
+    const sec = document.createElement("section");
+    sec.innerHTML = `<h2></h2>`;
+    sec.querySelector("h2").textContent = s.title;
+    s.qs.forEach((q, qi) => {
+      const id = `${si}.${qi}`;
+      const cur = state.a[id] || {};
+      const div = document.createElement("div");
+      div.className = "q";
+      const p = document.createElement("p"); p.textContent = q; div.appendChild(p);
+      const sc = document.createElement("div"); sc.className = "scale";
+      SCALE.forEach(([v, label]) => {
+        const l = document.createElement("label");
+        const i = document.createElement("input");
+        i.type = "radio"; i.name = "q" + id; i.value = v; i.checked = cur.r === v;
+        i.onchange = () => { (state.a[id] ||= {}).r = v; save(); };
+        l.append(i, `${v} – ${label}`);
+        sc.appendChild(l);
+      });
+      div.appendChild(sc);
+      const t = document.createElement("textarea");
+      t.placeholder = "Optional notes / what you'd like to learn…";
+      t.value = cur.n || "";
+      t.oninput = () => { (state.a[id] ||= {}).n = t.value; save(); };
+      div.appendChild(t);
+      sec.appendChild(div);
+    });
+    form.appendChild(sec);
+  });
+}
+
+function updateProgress() {
+  const done = ids.filter(id => state.a[id]?.r !== undefined).length;
+  document.getElementById("progress").textContent = `${done}/${ids.length} answered`;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg); return true; }
+  catch (e) { return false; }
+}
+
+function markdown() {
+  const L = [];
+  L.push("# JavaScript Knowledge Gap Questionnaire", "");
+  L.push("**Rating scale:** " + SCALE.map(([v, l]) => `${v} = ${l}`).join("; "), "");
+  const answered = ids.filter(id => state.a[id]?.r !== undefined).length;
+  L.push(`**Answered:** ${answered}/${ids.length}`, "");
+  SECTIONS.forEach((s, si) => {
+    L.push(`## ${s.title}`, "");
+    s.qs.forEach((q, qi) => {
+      const a = state.a[`${si}.${qi}`] || {};
+      L.push(`### ${q}`);
+      L.push(`- **Rating:** ${a.r === undefined ? "Not answered" : `${a.r} – ${SCALE[a.r][1]}`}`);
+      if (a.n && a.n.trim()) L.push(`- **Notes:** ${a.n.trim().replace(/\n/g, "\n  ")}`);
+      L.push("");
+    });
+  });
+  return L.join("\n");
+}
+
+document.getElementById("share").onclick = async () => {
+  const url = location.origin + location.pathname + location.search + "#d=" + encode();
+  history.replaceState(null, "", url);
+  if (!await copy(url, "Share link copied")) prompt("Copy this link:", url);
+};
+document.getElementById("md").onclick = () => {
+  document.getElementById("out").value = markdown();
+  document.getElementById("dlg").showModal();
+};
+document.getElementById("copyMd").onclick = async () => {
+  const o = document.getElementById("out"); o.select();
+  if (!await copy(o.value, "Markdown copied")) document.execCommand("copy");
+};
+document.getElementById("close").onclick = () => document.getElementById("dlg").close();
+document.getElementById("dl").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([markdown()], { type: "text/markdown" }));
+  a.download = "js-questionnaire.md"; a.click();
+};
+document.getElementById("reset").onclick = () => {
+  if (!confirm("Clear all answers?")) return;
+  localStorage.removeItem(KEY);
+  history.replaceState(null, "", location.pathname + location.search);
+  location.reload();
+};
+
+load();
+render();
+updateProgress();
+if (location.hash.startsWith("#d=")) save(); // persist a shared link's answers locally
+</script>
+</body>
+</html>
