@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5f0">
+  <meta name="description" content="A simple compensation calculator for comparing workdays, benefits and corporate donation matching.">
+  <title>Comp Calculator</title>
+  <style>
+    :root { color-scheme: light; --paper: #f5f5f0; --ink: #203c36; --muted: #64736d; --line: #dde3da; --green: #265c47; --lime: #d7ed9f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.55; }
+    .shell { max-width: 1140px; margin: auto; padding: 32px 28px 24px; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 650; letter-spacing: -.3px; margin: 0; }
+    .baseline-year { font-size: 12px; color: var(--muted); }
+    .mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: var(--lime); background: var(--ink); font-size: 21px; }
+    .baseline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; padding: 20px 24px; background: #e9eee4; border: 1px solid #dfe6d8; border-radius: 14px; margin: 24px 0; }
+    .baseline dt { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .baseline dd { font-size: 19px; font-weight: 650; letter-spacing: -.5px; margin: 0; font-variant-numeric: tabular-nums; }
+    .baseline small { font-size: 11px; font-weight: 400; letter-spacing: 0; }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .controls { background: #fff; padding: 27px; border: 1px solid var(--line); border-radius: 18px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 22px; }
+    h2 { font-size: 17px; font-weight: 650; letter-spacing: -.4px; margin: 0; }
+    button { font: inherit; }
+    .reset { color: var(--muted); background: none; border: none; font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+    legend, .control-label { font-size: 13px; font-weight: 600; }
+    .days { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 11px; }
+    .day { position: relative; }
+    .day input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+    .day span { display: block; padding: 10px 0; border: 1px solid var(--line); border-radius: 8px; text-align: center; font-size: 13px; }
+    .day input:checked + span { background: var(--green); border-color: var(--green); color: white; }
+    .day input:focus-visible + span { outline: 3px solid #82ab68; outline-offset: 3px; }
+    .control { border-top: 1px solid #edf0e9; margin-top: 24px; padding-top: 21px; }
+    .label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    .match-row { flex-wrap: wrap; gap: 8px; }
+    .label-with-action { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .minimum { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; background: #edf3e6; color: var(--green); font-size: 11px; cursor: pointer; }
+    .match-row output { margin-left: auto; }
+    output { font-variant-numeric: tabular-nums; }
+    .label-row output { font-size: 16px; font-weight: 650; }
+    .hint { margin: 6px 0 12px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    input[type="range"] { --progress: 0%; display: block; width: 100%; height: 6px; margin: 20px 0 12px; border-radius: 5px; appearance: none; background: linear-gradient(to right, var(--green) var(--progress), #e8ede4 var(--progress)); cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 19px; height: 19px; border-radius: 50%; background: var(--green); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--green); }
+    input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--green); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--green); }
+    input:focus-visible, button:focus-visible { outline: 3px solid #82ab68; outline-offset: 5px; }
+    .range-labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+    .office { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .office input { width: 19px; height: 19px; accent-color: var(--green); flex-shrink: 0; cursor: pointer; }
+    .office strong { display: block; font-size: 13px; font-weight: 600; }
+    .badge { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--green); background: #edf3e6; border-radius: 5px; padding: 4px 7px; white-space: nowrap; }
+    .result { border-radius: 18px; overflow: hidden; border: 1px solid #234a3b; background: var(--ink); color: #f8faf2; }
+    .result-top { padding: 29px 28px 24px; }
+    .result h2 { font-size: 19px; font-weight: 500; }
+    .pay { display: block; font-size: clamp(38px, 4.5vw, 56px); letter-spacing: -2px; font-weight: 600; line-height: 1.2; margin-top: 15px; color: var(--lime); }
+    .per-year { font-size: 12px; color: #c3d0c6; margin: 5px 0 16px; }
+    .context { display: inline-block; font-size: 11px; padding: 5px 10px; border: 1px solid #537064; border-radius: 6px; }
+    .breakdown { margin: 0 28px; padding: 20px 0; border-top: 1px solid #486258; }
+    .breakdown div, .package div { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; font-size: 12px; }
+    .breakdown dt { color: #c7d3ca; }
+    dd { margin: 0; font-variant-numeric: tabular-nums; }
+    .package { margin: 0 28px; padding: 16px 0 22px; border-top: 1px solid #486258; }
+    .package .total { font-size: 14px; font-weight: 600; }
+    .package .detail { color: #c7d3ca; font-size: 11px; }
+    .giving { padding: 21px 27px; background: #eaf0e1; color: var(--ink); }
+    .giving h3 { margin: 0 0 10px; font-size: 13px; font-weight: 650; }
+    .giving p { margin: 5px 0; font-size: 12px; color: #51654e; }
+    .giving strong { color: var(--ink); font-weight: 650; }
+    .notes { margin: 17px 3px 0; font-size: 11px; line-height: 1.8; color: var(--muted); }
+    .notes summary { cursor: pointer; color: var(--green); font-weight: 600; }
+    .notes p { margin: 8px 0; }
+    .storage-status { color: #86351f; }
+    footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; font-size: 11px; color: var(--muted); }
+    footer p { margin: 0; }
+    noscript p { padding: 18px; border: 1px solid #ab482e; color: #86351f; background: #fff1eb; border-radius: 10px; }
+    @media (max-width: 760px) {
+      .shell { padding: 20px 18px; }
+      .baseline { grid-template-columns: repeat(3, 1fr); padding: 17px; gap: 16px 12px; }
+      .baseline dd { font-size: 17px; }
+      main { grid-template-columns: 1fr; gap: 20px; }
+      .controls { padding: 23px; }
+      .pay { font-size: 49px; }
+    }
+    @media (max-width: 370px) {
+      .baseline { grid-template-columns: repeat(2, 1fr); }
+      .office { gap: 7px; }
+      .pay { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1 class="brand"><span class="mark" aria-hidden="true">=</span> comp calculator</h1>
+      <span class="baseline-year">2026 baseline</span>
+    </header>
+    <dl class="baseline" aria-label="2026 annual baseline in AUD">
+      <div><dt>Current compensation</dt><dd>$400,000</dd></div>
+      <div><dt>Working week</dt><dd>4 <small>days</small></dd></div>
+      <div><dt>Corporate match</dt><dd>$23,350</dd></div>
+      <div><dt>Benefits value</dt><dd>$5,000</dd></div>
+      <div><dt>Personal donations</dt><dd>$300,000</dd></div>
+    </dl>
+    <noscript><p>This calculator needs JavaScript to calculate offers. Enable JavaScript and reload the page.</p></noscript>
+    <p class="notes storage-status" id="storage-status" role="status" hidden></p>
+    <main>
+      <form class="controls" id="offer-form">
+        <div class="section-heading"><h2>Offer settings</h2><button class="reset" type="reset">Reset</button></div>
+        <fieldset>
+          <legend>Working days per week</legend>
+          <div class="days">
+            <label class="day"><input type="radio" name="days" value="2"><span>2 days</span></label>
+            <label class="day"><input type="radio" name="days" value="3"><span>3 days</span></label>
+            <label class="day"><input type="radio" name="days" value="4" checked><span>4 days</span></label>
+            <label class="day"><input type="radio" name="days" value="5"><span>5 days</span></label>
+          </div>
+        </fieldset>
+        <div class="control">
+          <div class="label-row"><label class="control-label" for="premium">Premium for switching</label><output id="premium-value" for="premium">15%</output></div>
+          <input type="range" id="premium" name="premium" min="15" max="30" step="1" value="15">
+          <div class="range-labels"><span>15% minimum</span><span>30%</span></div>
+        </div>
+        <div class="control">
+          <label class="office"><input type="checkbox" name="inOffice" id="inOffice"><strong>Strict in-office only</strong><span class="badge">+10%</span></label>
+        </div>
+        <div class="control">
+          <div class="label-row match-row"><div class="label-with-action"><label class="control-label" for="match">Corporate donation matching</label><button class="minimum" id="salary-minimum" type="button">Salary Minimum</button></div><output id="match-value" for="match">$23,350</output></div>
+          <p class="hint" id="match-hint">1:1 matching. Pay falls until contributions are equal, then rises.</p>
+          <input type="range" id="match" name="match" min="0" max="300000" step="25" value="23350" aria-describedby="match-hint">
+          <div class="range-labels"><span>$0</span><span>$300,000 / year</span></div>
+        </div>
+        <div class="control">
+          <div class="label-row"><label class="control-label" for="benefits">Annual benefits value</label><output id="benefits-value" for="benefits">$5,000</output></div>
+          <input type="range" id="benefits" name="benefits" min="0" max="30000" step="250" value="5000">
+          <div class="range-labels"><span>$0</span><span>$30,000 / year</span></div>
+        </div>
+      </form>
+      <div>
+        <section class="result" aria-labelledby="result-title" aria-live="polite" aria-atomic="true">
+          <div class="result-top">
+            <h2 id="result-title">Competitive Offer Baseline</h2>
+            <output class="pay" id="offer-pay" for="premium match benefits inOffice">-</output>
+            <p class="per-year">annual employee pay · AUD · before tax</p>
+            <span class="context" id="offer-context">-</span>
+          </div>
+          <dl class="breakdown">
+            <div><dt id="prorated-label">Current pay, adjusted for days</dt><dd id="prorated-pay">-</dd></div>
+            <div><dt id="premium-label">Switching premium</dt><dd id="premium-pay">-</dd></div>
+            <div><dt>In-office loading (10%)</dt><dd id="office-pay">-</dd></div>
+            <div><dt>Benefits adjustment</dt><dd id="benefits-adjustment">-</dd></div>
+            <div><dt>Donation match adjustment</dt><dd id="match-adjustment">-</dd></div>
+            <div><dt>Extra pay to fund 1:1 match</dt><dd id="giving-funding">-</dd></div>
+          </dl>
+          <dl class="package">
+            <div class="total"><dt>Total annual package</dt><dd id="package-total">-</dd></div>
+            <div class="detail"><dt>Includes benefits</dt><dd id="package-benefits">-</dd></div>
+            <div class="detail"><dt>Includes corporate matching used</dt><dd id="package-match">-</dd></div>
+          </dl>
+          <div class="giving">
+            <h3>Donations</h3>
+            <p>Personal donations: <strong id="personal-donations">-</strong> / year</p>
+            <p>Corporate match used (1:1): <strong id="actual-match">-</strong> / year</p>
+            <p>Personal + corporate giving: <strong id="giving-total">-</strong> / year.</p>
+            <p id="extra-giving-note" hidden>Pay increases here to fund the full 1:1 match.</p>
+          </div>
+        </section>
+        <details class="notes">
+          <summary>Calculation details</summary>
+          <p>Pay scales by days ÷ 4. Switching and in-office percentages are additive. Benefits and matching offset pay against the current annual values.</p>
+          <p>Personal giving scales with pay. Matching replaces personal giving until contributions are equal; further matching adds equal personal donations and pay.</p>
+        </details>
+      </div>
+    </main>
+    <footer><p><strong>Not all factors are considered.</strong> Excludes parental leave, accrued long service leave, tax effects, superannuation differences and equity risk. Not financial advice.</p></footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
